@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchForge — UI Component Reference Library</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="tokens-searchforge.css">
+  <style>
+    /* ── PAGE SHELL ─────────────────────────────────────────────── */
+    html, body { height: 100%; }
+    body {
+      background: var(--canvas-void);
+      color: var(--ink-primary);
+      padding: 0;
+      overflow-y: auto;
+    }
+    .comp-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--sp-6) var(--sp-5);
+    }
+    .comp-hero {
+      text-align: center;
+      padding: var(--sp-8) 0 var(--sp-6);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: var(--sp-6);
+    }
+    .comp-hero h1 {
+      font-size: var(--text-3xl);
+      font-weight: var(--w-bold);
+      color: var(--ink-primary);
+      margin-bottom: var(--sp-2);
+    }
+    .comp-hero p {
+      font-size: var(--text-md);
+      color: var(--ink-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .comp-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      margin-top: var(--sp-3);
+      padding: 4px 12px;
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-full);
+      font-size: var(--text-xs);
+      color: var(--ink-secondary);
+    }
+    .comp-hero-badge .status-dot { width: 5px; height: 5px; }
+
+    /* ── NAVIGATION ──────────────────────────────────────────────── */
+    .comp-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-1);
+      padding: var(--sp-2) 0;
+      margin-bottom: var(--sp-6);
+      background: var(--canvas-void);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .comp-nav a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: var(--text-xs);
+      font-weight: var(--w-medium);
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-radius: var(--r-sm);
+      transition: all 80ms;
+    }
+    .comp-nav a:hover { background: var(--canvas-surface); color: var(--ink-primary); }
+    .comp-nav a.active { background: var(--code-action-dim); color: var(--code-action); }
+
+    /* ── SECTION ──────────────────────────────────────────────────── */
+    .comp-section {
+      margin-bottom: var(--sp-8);
+      scroll-margin-top: 60px;
+    }
+    .comp-section-title {
+      font-size: var(--text-xl);
+      font-weight: var(--w-bold);
+      color: var(--ink-primary);
+      margin-bottom: var(--sp-1);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+    .comp-section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--code-action);
+      color: #fff;
+      font-size: 11px;
+      font-weight: var(--w-bold);
+      border-radius: var(--r-sm);
+      flex-shrink: 0;
+    }
+    .comp-section-desc {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+      margin-bottom: var(--sp-4);
+      max-width: 700px;
+    }
+    .comp-subsection {
+      margin-bottom: var(--sp-5);
+    }
+    .comp-subsection-title {
+      font-size: var(--text-md);
+      font-weight: var(--w-semibold);
+      color: var(--ink-secondary);
+      margin-bottom: var(--sp-3);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+    .comp-subsection-title .pill { font-size: 9px; }
+
+    /* ── SHOWCASE CONTAINER ──────────────────────────────────────── */
+    .comp-showcase {
+      background: var(--canvas-base);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: var(--sp-4);
+    }
+    .comp-showcase-preview {
+      padding: var(--sp-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+    .comp-showcase-preview.row {
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--sp-3);
+    }
+    .comp-showcase-preview.center {
+      align-items: center;
+      justify-content: center;
+    }
+    .comp-showcase-code {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--canvas-surface);
+    }
+    .comp-showcase-code pre {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-secondary);
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0;
+    }
+    .comp-showcase-code .tag { color: var(--code-action); }
+    .comp-showcase-code .attr { color: var(--code-tool); }
+    .comp-showcase-code .val { color: var(--code-success); }
+    .comp-showcase-code .cls { color: var(--code-accent); }
+    .comp-showcase-code .cmt { color: var(--ink-ghost); font-style: italic; }
+
+    /* ── RESPONSIVE BREAKPOINTS ──────────────────────────────────── */
+    .bp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-3);
+    }
+    .bp-card {
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      padding: var(--sp-3);
+    }
+    .bp-label {
+      font-size: var(--text-xs);
+      font-weight: var(--w-semibold);
+      color: var(--ink-secondary);
+      margin-bottom: var(--sp-2);
+    }
+    .bp-mockup {
+      background: var(--canvas-elevated);
+      border-radius: var(--r-sm);
+      padding: var(--sp-2);
+      min-height: 80px;
+      display: flex;
+      gap: 4px;
+      align-items: stretch;
+    }
+    .bp-panel {
+      background: var(--canvas-base);
+      border: 1px solid var(--border-default);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--ink-muted);
+    }
+
+    /* ── UTILITY ──────────────────────────────────────────────────── */
+    .gap-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: flex-start; }
+    .w-full { width: 100%; }
+    .max-w-sm { max-width: 340px; }
+    .max-w-md { max-width: 500px; }
+    .max-w-lg { max-width: 700px; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────────── */
+    @media(max-width:800px) {
+      .comp-page { padding: var(--sp-4) var(--sp-3); }
+      .bp-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="comp-page">
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <div class="comp-hero">
+    <h1>SearchForge Components</h1>
+    <p>Complete UI component library for the Universal Shopping Search Engine.
+       Every component uses Reese Design System v1.2 tokens.</p>
+    <div class="comp-hero-badge">
+      <span class="status-dot on"></span>
+      10 components · tokens.css + tokens-searchforge.css · Dark Mode
+    </div>
+  </div>
+
+  <!-- ═══════════ NAV ═══════════ -->
+  <nav class="comp-nav" id="compNav">
+    <a href="#s1">① Layout Shell</a>
+    <a href="#s2">② SearchBar</a>
+    <a href="#s3">③ FilterPanel</a>
+    <a href="#s4">④ ListingCard</a>
+    <a href="#s5">⑤ ListingTable</a>
+    <a href="#s6">⑥ DetailView</a>
+    <a href="#s7">⑦ ComparisonView</a>
+    <a href="#s8">⑧ CommandPalette</a>
+    <a href="#s9">⑨ Pagination</a>
+    <a href="#s10">⑩ Status Components</a>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       1. LAYOUT SHELL
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s1">
+    <div class="comp-section-title">
+      <span class="comp-section-num">1</span>
+      Layout Shell
+    </div>
+    <div class="comp-section-desc">
+      3-panel layout: sidebar (240px) · main content · optional detail drawer (360px).
+      Windows-style titlebar at top, status bar at bottom. Responsive breakpoints collapse panels.
+    </div>
+
+    <!-- 1.1 Full App Shell -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        1.1 Full App Shell
+        <span class="pill blue">Structure</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="background:var(--canvas-base);border:1px solid var(--border-default);border-radius:var(--r-lg);overflow:hidden;height:360px;display:flex;flex-direction:column">
+            <!-- Titlebar -->
+            <div style="height:32px;background:var(--canvas-base);border-bottom:1px solid var(--border-default);display:flex;align-items:center;padding:0 8px;gap:8px;flex-shrink:0">
+              <div style="width:16px;height:16px;background:var(--code-action);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700">SF</div>
+              <span style="font-size:11px;color:var(--ink-muted);font-weight:500">SearchForge</span>
+              <div style="flex:1"></div>
+              <button style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);cursor:pointer;border:none;background:none;font-size:12px;border-radius:var(--r-xs)">─</button>
+              <button style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);cursor:pointer;border:none;background:none;font-size:12px;border-radius:var(--r-xs)">□</button>
+              <button style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);cursor:pointer;border:none;background:none;font-size:12px;border-radius:var(--r-xs)">✕</button>
+            </div>
+            <!-- Main Wrap -->
+            <div style="flex:1;display:flex;min-height:0">
+              <!-- Sidebar -->
+              <div style="width:180px;background:var(--canvas-base);border-right:1px solid var(--border-default);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0">
+                <div style="padding:8px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:6px">
+                  <div style="width:20px;height:20px;background:var(--code-action);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700">SF</div>
+                  <span style="font-size:11px;font-weight:600;color:var(--ink-primary)">SearchForge</span>
+                </div>
+                <div style="padding:8px 0">
+                  <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;color:var(--code-action);background:var(--code-action-dim);border-left:2px solid var(--code-action);cursor:pointer">
+                    <span style="font-size:12px">🔍</span> Search
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;color:var(--ink-secondary);cursor:pointer;border-left:2px solid transparent">
+                    <span style="font-size:12px">📊</span> Dashboard
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;color:var(--ink-secondary);cursor:pointer;border-left:2px solid transparent">
+                    <span style="font-size:12px">🔔</span> Alerts
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;color:var(--ink-secondary);cursor:pointer;border-left:2px solid transparent">
+                    <span style="font-size:12px">⚖</span> Compare
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:11px;color:var(--ink-secondary);cursor:pointer;border-left:2px solid transparent">
+                    <span style="font-size:12px">♥</span> Watchlist
+                  </div>
+                </div>
+              </div>
+              <!-- Content -->
+              <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+                <!-- Search Bar -->
+                <div style="padding:8px 12px;border-bottom:1px solid var(--border-subtle);background:var(--canvas-base)">
+                  <div style="display:flex;align-items:center;height:36px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md);padding:0 12px;gap:8px">
+                    <div style="display:flex;align-items:center;gap:4px;padding:2px 8px;height:24px;background:var(--canvas-raised);border:1px solid var(--border-default);border-radius:var(--r-sm);font-size:11px;color:var(--ink-secondary)">
+                      <span style="width:6px;height:6px;border-radius:50%;background:var(--code-action)"></span>
+                      All
+                    </div>
+                    <div style="flex:1;font-size:13px;color:var(--ink-muted)">Search CNC machines, endmills, used cars...</div>
+                    <span class="kbd" style="opacity:0.5">Ctrl+K</span>
+                  </div>
+                </div>
+                <!-- Domain Tabs -->
+                <div style="display:flex;border-bottom:1px solid var(--border-default);background:var(--canvas-base)">
+                  <div style="display:flex;align-items:center;gap:4px;padding:0 12px;height:32px;font-size:11px;font-weight:500;color:var(--ink-primary);border-bottom:2px solid var(--code-action);background:var(--canvas-surface)">🌐 All <span style="font-size:9px;padding:1px 4px;background:var(--canvas-raised);border-radius:2px;color:var(--ink-muted)">12.8k</span></div>
+                  <div style="display:flex;align-items:center;gap:4px;padding:0 12px;height:32px;font-size:11px;font-weight:500;color:var(--ink-muted);border-bottom:2px solid transparent">🔧 CNC</div>
+                  <div style="display:flex;align-items:center;gap:4px;padding:0 12px;height:32px;font-size:11px;font-weight:500;color:var(--ink-muted);border-bottom:2px solid transparent">⚙ Endmills</div>
+                  <div style="display:flex;align-items:center;gap:4px;padding:0 12px;height:32px;font-size:11px;font-weight:500;color:var(--ink-muted);border-bottom:2px solid transparent">🚗 Cars</div>
+                </div>
+                <!-- Body: Filter + Content -->
+                <div style="flex:1;display:flex;min-height:0">
+                  <!-- Filters -->
+                  <div style="width:200px;background:var(--canvas-base);border-right:1px solid var(--border-default);padding:8px;overflow-y:auto;flex-shrink:0">
+                    <div style="font-size:10px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Filters</div>
+                    <div style="background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm);padding:8px;margin-bottom:6px">
+                      <div style="font-size:10px;color:var(--ink-muted);margin-bottom:4px">Price</div>
+                      <div style="display:flex;gap:4px">
+                        <div style="flex:1;height:24px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">$0</div>
+                        <div style="flex:1;height:24px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">$100k</div>
+                      </div>
+                    </div>
+                    <div style="background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm);padding:8px;margin-bottom:6px">
+                      <div style="font-size:10px;color:var(--ink-muted);margin-bottom:4px">Condition</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:3px">
+                        <span style="padding:2px 6px;background:var(--code-action-dim);border:1px solid var(--code-action);border-radius:2px;font-size:9px;color:var(--code-action)">New</span>
+                        <span style="padding:2px 6px;background:var(--code-action-dim);border:1px solid var(--code-action);border-radius:2px;font-size:9px;color:var(--code-action)">Used</span>
+                        <span style="padding:2px 6px;background:var(--canvas-raised);border:1px solid var(--border-default);border-radius:2px;font-size:9px;color:var(--ink-muted)">Refurb</span>
+                      </div>
+                    </div>
+                    <div style="background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm);padding:8px">
+                      <div style="font-size:10px;color:var(--ink-muted);margin-bottom:4px">Rating</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:3px">
+                        <span style="padding:2px 6px;background:var(--code-action-dim);border:1px solid var(--code-action);border-radius:2px;font-size:9px;color:var(--code-action)">⭐ 4.5+</span>
+                        <span style="padding:2px 6px;background:var(--canvas-raised);border:1px solid var(--border-default);border-radius:2px;font-size:9px;color:var(--ink-muted)">⭐ 4.0+</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Results -->
+                  <div style="flex:1;overflow-y:auto;padding:8px 12px;min-width:0">
+                    <div style="font-size:11px;color:var(--ink-muted);margin-bottom:8px"><strong style="color:var(--ink-primary)">12,847</strong> results · showing 1–20</div>
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <div style="display:flex;gap:8px;padding:8px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md)">
+                        <div style="width:80px;height:60px;background:var(--canvas-elevated);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px">🔧</div>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                          <div style="font-size:12px;font-weight:600;color:var(--ink-primary)">Haas VF-2SS Super Speed</div>
+                          <div style="font-size:10px;color:var(--ink-muted)">2019 · 1,247 hrs · Fanuc 31i</div>
+                          <div style="font-size:13px;font-weight:700;color:var(--ink-primary);font-family:var(--font-mono)">$52,500</div>
+                        </div>
+                      </div>
+                      <div style="display:flex;gap:8px;padding:8px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md)">
+                        <div style="width:80px;height:60px;background:rgba(92,225,230,0.08);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px">⚙</div>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                          <div style="font-size:12px;font-weight:600;color:var(--ink-primary)">Harvey Tool 1/2" 3-Flute TiAlN</div>
+                          <div style="font-size:10px;color:var(--ink-muted)">0.500" DIA · 1.5" LOC · 3.0" OAL</div>
+                          <div style="font-size:13px;font-weight:700;color:var(--ink-primary);font-family:var(--font-mono)">$24.95</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Status Bar -->
+            <div style="height:24px;background:var(--canvas-base);border-top:1px solid var(--border-default);display:flex;align-items:center;padding:0 8px;gap:12px;font-size:10px;color:var(--ink-muted);flex-shrink:0">
+              <span><strong>12,847</strong> results</span>
+              <span style="width:1px;height:10px;background:var(--border-default)"></span>
+              <span>23 new today</span>
+              <span style="width:1px;height:10px;background:var(--border-default)"></span>
+              <span style="display:flex;align-items:center;gap:3px"><span class="status-dot on" style="width:4px;height:4px"></span> Live</span>
+              <div style="flex:1"></div>
+              <span class="kbd" style="font-size:7px;height:12px">Ctrl+K</span> Command Palette
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Layout Shell Structure --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-app"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-titlebar"</span><span class="tag">&gt;</span> ... Windows titlebar ... <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-main-wrap"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-sidebar"</span><span class="tag">&gt;</span> ... Navigation ... <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-content"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-search-row"</span><span class="tag">&gt;</span> Search bar <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-domain-tabs"</span><span class="tag">&gt;</span> Domain switcher <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-content-body"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-filter-panel"</span><span class="tag">&gt;</span> Filters <span class="tag">&lt;/div&gt;</span>
+        <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-results-area"</span><span class="tag">&gt;</span> Results <span class="tag">&lt;/div&gt;</span>
+        <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-detail-drawer"</span><span class="tag">&gt;</span> Detail <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-statusbar"</span><span class="tag">&gt;</span> ... <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.2 Responsive Breakpoints -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        1.2 Responsive Breakpoints
+        <span class="pill muted">≥1200px · 960–1199px · &lt;960px</span>
+      </div>
+      <div class="bp-grid">
+        <div class="bp-card">
+          <div class="bp-label">≥1200px — Full 3-Column</div>
+          <div class="bp-mockup">
+            <div class="bp-panel" style="width:30%">Sidebar</div>
+            <div class="bp-panel" style="width:25%">Filters</div>
+            <div class="bp-panel" style="flex:1">Content</div>
+          </div>
+        </div>
+        <div class="bp-card">
+          <div class="bp-label">960–1199px — Icon Rail + Overlay Filters</div>
+          <div class="bp-mockup">
+            <div class="bp-panel" style="width:14%"> Rail</div>
+            <div class="bp-panel" style="flex:1">Content</div>
+          </div>
+        </div>
+        <div class="bp-card">
+          <div class="bp-label">&lt;960px — No Sidebar, Filters Modal</div>
+          <div class="bp-mockup">
+            <div class="bp-panel" style="flex:1">Full-width Content</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp-showcase" style="margin-top:var(--sp-3)">
+        <div class="comp-showcase-code" style="border-top:none">
+<pre><span class="cmt">/* Responsive Breakpoints */</span>
+<span class="tag">@media</span>(max-width:1199px) {
+  <span class="cls">.sf-sidebar</span> { width: var(--sf-sidebar-collapsed); <span class="cmt">/* 48px icon rail */</span> }
+  <span class="cls">.sf-filter-panel</span> { position: fixed; <span class="cmt">/* slides over content */</span> }
+}
+<span class="tag">@media</span>(max-width:959px) {
+  <span class="cls">.sf-sidebar</span> { display: none; }
+  <span class="cls">.sf-filter-panel</span> { <span class="cmt">/* full-screen modal overlay */</span> }
+}
+
+<span class="cmt">/* Panel Sizing Tokens */</span>
+<span class="cls">--sf-sidebar-width:</span>     240px;    <span class="cmt">/* Min: 180, Max: 400 */</span>
+<span class="cls">--sf-sidebar-collapsed:</span> 48px;     <span class="cmt">/* Icon-only rail */</span>
+<span class="cls">--sf-filter-width:</span>      280px;    <span class="cmt">/* Min: 0, Max: 420 */</span>
+<span class="cls">--sf-detail-width:</span>      360px;    <span class="cmt">/* Min: 0, Max: 500 */</span>
+<span class="cls">--sf-searchbar-height:</span>  44px;
+<span class="cls">--sf-tab-height:</span>        36px;
+<span class="cls">--sf-statusbar-height:</span>  28px;</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       2. SEARCHBAR COMPONENT
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s2">
+    <div class="comp-section-title">
+      <span class="comp-section-num">2</span>
+      SearchBar
+    </div>
+    <div class="comp-section-desc">
+      Hero search input with domain selector pill, Cmd+K shortcut badge, auto-suggest dropdown,
+      and filter toggle button. Height: --h-xl (44px).
+    </div>
+
+    <!-- 2.1 Default State -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">2.1 Default State</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="sf-searchbar max-w-lg">
+            <div class="sf-searchbar-domain">
+              <span class="sf-domain-dot" style="background:var(--code-action)"></span>
+              <span>All Domains</span>
+              <span style="font-size:8px;opacity:0.5">▾</span>
+            </div>
+            <input class="sf-searchbar-input" type="text" placeholder="Search CNC machines, endmills, used cars...">
+            <div class="sf-searchbar-shortcut">
+              <span class="kbd">Ctrl</span><span class="kbd">K</span>
+            </div>
+            <div class="sf-searchbar-filter-btn">
+              <span>⚙ Filters</span>
+              <span class="sf-searchbar-filter-count">5</span>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-searchbar"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-searchbar-domain"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-domain-dot"</span> <span class="attr">style</span>=<span class="val">"background:var(--sf-domain-cnc)"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;span&gt;</span>All Domains<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">class</span>=<span class="val">"sf-searchbar-input"</span> <span class="attr">type</span>=<span class="val">"text"</span> <span class="attr">placeholder</span>=<span class="val">"Search..."</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-searchbar-shortcut"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"kbd"</span><span class="tag">&gt;</span>Ctrl<span class="tag">&lt;/span&gt;</span><span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"kbd"</span><span class="tag">&gt;</span>K<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-searchbar-filter-btn"</span><span class="tag">&gt;</span>
+    ⚙ Filters
+    <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-searchbar-filter-count"</span><span class="tag">&gt;</span>5<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.2 Focus State -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">2.2 Focus State</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="sf-searchbar max-w-lg" style="border-color:var(--code-action);box-shadow:0 0 0 1px var(--code-action)">
+            <div class="sf-searchbar-domain">
+              <span class="sf-domain-dot" style="background:var(--sf-domain-cnc)"></span>
+              <span>CNC</span>
+              <span style="font-size:8px;opacity:0.5">▾</span>
+            </div>
+            <input class="sf-searchbar-input" type="text" value="Haas VF-2" style="color:var(--ink-primary)">
+            <div class="sf-searchbar-shortcut">
+              <span class="kbd" style="opacity:0.3">Ctrl</span><span class="kbd" style="opacity:0.3">K</span>
+            </div>
+            <div class="sf-searchbar-filter-btn" style="background:var(--code-action-dim);border-color:var(--code-action);color:var(--code-action)">
+              <span>⚙ Filters</span>
+              <span class="sf-searchbar-filter-count">5</span>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">/* Focus state: blue border + ring */</span>
+<span class="cls">.sf-searchbar:focus-within</span> {
+  <span class="attr">border-color:</span> <span class="val">var(--code-action)</span>;
+  <span class="attr">box-shadow:</span> <span class="val">0 0 0 1px var(--code-action)</span>;
+}
+<span class="cmt">/* Shortcut badge dims when input focused */</span>
+<span class="cls">.sf-searchbar:focus-within .sf-searchbar-shortcut .kbd</span> {
+  <span class="attr">opacity:</span> <span class="val">0.3</span>;
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3 Autocomplete Dropdown -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        2.3 Autocomplete Dropdown
+        <span class="pill magenta">Interactive</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="position:relative;max-width:500px">
+            <div class="sf-searchbar">
+              <div class="sf-searchbar-domain">
+                <span class="sf-domain-dot" style="background:var(--code-action)"></span>
+                <span>All</span>
+                <span style="font-size:8px;opacity:0.5">▾</span>
+              </div>
+              <input class="sf-searchbar-input" type="text" value="Haas">
+              <div class="sf-searchbar-shortcut"><span class="kbd" style="opacity:0.3">Ctrl</span><span class="kbd" style="opacity:0.3">K</span></div>
+            </div>
+            <div class="sf-autocomplete open" style="display:block">
+              <div class="sf-autocomplete-group">
+                <div class="sf-autocomplete-label">Suggested</div>
+                <div class="sf-autocomplete-item" style="background:var(--canvas-elevated)">
+                  <span class="sf-autocomplete-item-domain cnc">CNC</span>
+                  Haas VF-2 Vertical Mill
+                </div>
+                <div class="sf-autocomplete-item">
+                  <span class="sf-autocomplete-item-domain cnc">CNC</span>
+                  Haas UMC-750SS 5-Axis
+                </div>
+                <div class="sf-autocomplete-item">
+                  <span class="sf-autocomplete-item-domain cnc">CNC</span>
+                  Haas ST-20Y Lathe
+                </div>
+              </div>
+              <div class="sf-autocomplete-group">
+                <div class="sf-autocomplete-label">Recent</div>
+                <div class="sf-autocomplete-item">
+                  <span style="font-size:11px;opacity:0.4">⏱</span>
+                  Haas VF-2 · 2h ago
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete open"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-group"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-label"</span><span class="tag">&gt;</span>Suggested<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-item"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-item-domain cnc"</span><span class="tag">&gt;</span>CNC<span class="tag">&lt;/span&gt;</span>
+      Haas VF-2 Vertical Mill
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-group"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-label"</span><span class="tag">&gt;</span>Recent<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-autocomplete-item"</span><span class="tag">&gt;</span>⏱ Haas VF-2 · 2h ago<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.4 Domain Selector Pills -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">2.4 Domain Selector Pills</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row">
+          <div class="sf-searchbar-domain">
+            <span class="sf-domain-dot" style="background:var(--sf-domain-cnc)"></span>
+            CNC Machines
+          </div>
+          <div class="sf-searchbar-domain">
+            <span class="sf-domain-dot" style="background:var(--sf-domain-endmill)"></span>
+            Endmills
+          </div>
+          <div class="sf-searchbar-domain">
+            <span class="sf-domain-dot" style="background:var(--sf-domain-car)"></span>
+            Used Cars
+          </div>
+          <div class="sf-searchbar-domain" style="background:var(--code-action-dim);border-color:var(--code-action);color:var(--code-action)">
+            <span class="sf-domain-dot" style="background:var(--code-action)"></span>
+            All Domains
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       3. FILTER PANEL
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s3">
+    <div class="comp-section-title">
+      <span class="comp-section-num">3</span>
+      FilterPanel
+    </div>
+    <div class="comp-section-desc">
+      Collapsible left panel with grouped filters. All filters are domain-configurable.
+      Shows active filter chips bar and result count.
+    </div>
+
+    <!-- 3.1 Filter Groups -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">3.1 Filter Groups (Basic + Domain-Specific)</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="display:flex;gap:var(--sp-4);max-width:800px">
+            <!-- Basic Filters -->
+            <div class="sf-filter-panel" style="width:240px;flex-shrink:0;height:360px;border-radius:var(--r-lg)">
+              <div class="sf-filter-header">
+                <span class="sf-filter-title">Filters</span>
+                <button class="btn btn-sm btn-surface">Reset All</button>
+              </div>
+              <!-- Price Range -->
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">
+                  Price Range
+                  <span class="sf-filter-group-reset">reset</span>
+                </div>
+                <div class="sf-price-range">
+                  <input class="input input-sm" type="text" value="$10,000" style="width:80px;text-align:right">
+                  <span class="sf-price-range-sep">—</span>
+                  <input class="input input-sm" type="text" value="$75,000" style="width:80px">
+                </div>
+                <div style="margin-top:8px">
+                  <div class="sf-range-dual">
+                    <div class="sf-range-track"></div>
+                    <div class="sf-range-fill" style="left:10%;right:25%"></div>
+                    <div class="sf-range-thumb" style="left:10%"></div>
+                    <div class="sf-range-thumb" style="left:75%"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Condition -->
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">Condition</div>
+                <div class="sf-chip-group">
+                  <span class="sf-chip active">New</span>
+                  <span class="sf-chip active">Used — Good</span>
+                  <span class="sf-chip">Used — Fair</span>
+                  <span class="sf-chip">Refurbished</span>
+                </div>
+              </div>
+              <!-- Seller Rating -->
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">Seller Rating</div>
+                <div class="sf-chip-group">
+                  <span class="sf-chip active">⭐ 4.5+</span>
+                  <span class="sf-chip">⭐ 4.0+</span>
+                  <span class="sf-chip">Any</span>
+                </div>
+              </div>
+              <!-- Listed Date -->
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">Listed</div>
+                <div class="sf-chip-group">
+                  <span class="sf-chip active">24h</span>
+                  <span class="sf-chip">7 days</span>
+                  <span class="sf-chip">30 days</span>
+                  <span class="sf-chip">Any</span>
+                </div>
+              </div>
+            </div>
+            <!-- Domain-Specific: CNC -->
+            <div class="sf-filter-panel" style="width:240px;flex-shrink:0;height:360px;border-radius:var(--r-lg)">
+              <div class="sf-filter-header">
+                <span class="sf-filter-title" style="color:var(--sf-domain-cnc)">🔧 CNC Filters</span>
+              </div>
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">Machine Type</div>
+                <div class="sf-chip-group">
+                  <span class="sf-chip active">VMC</span>
+                  <span class="sf-chip">HMC</span>
+                  <span class="sf-chip">Lathe</span>
+                  <span class="sf-chip">Router</span>
+                  <span class="sf-chip">5-Axis</span>
+                </div>
+              </div>
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">
+                  Manufacturer
+                  <span style="font-size:var(--text-xs);color:var(--ink-muted)">2 selected</span>
+                </div>
+                <div class="sf-chip-group">
+                  <span class="sf-chip active">Haas <span class="sf-chip-x">✕</span></span>
+                  <span class="sf-chip active">DMG Mori <span class="sf-chip-x">✕</span></span>
+                  <span class="sf-chip">Mazak</span>
+                  <span class="sf-chip">Okuma</span>
+                </div>
+              </div>
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">
+                  Spindle Speed
+                  <span style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-primary)">8K–15K RPM</span>
+                </div>
+                <div class="sf-range-dual">
+                  <div class="sf-range-track"></div>
+                  <div class="sf-range-fill" style="left:20%;right:10%"></div>
+                  <div class="sf-range-thumb" style="left:20%"></div>
+                  <div class="sf-range-thumb" style="left:90%"></div>
+                </div>
+              </div>
+              <div class="sf-filter-group">
+                <div class="sf-filter-group-title">
+                  Year Range
+                </div>
+                <div class="sf-price-range">
+                  <input class="input input-sm" type="text" value="2015" style="width:56px;text-align:center">
+                  <span class="sf-price-range-sep">—</span>
+                  <input class="input input-sm" type="text" value="2024" style="width:56px">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 Dual-Thumb Range Slider -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        3.2 Dual-Thumb Range Slider
+        <span class="pill blue">Core Component</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="max-width:400px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:var(--text-xs);color:var(--ink-muted)">Price Range</span>
+              <span style="font-size:var(--text-xs);color:var(--ink-primary);font-family:var(--font-mono)">$10,000 — $75,000</span>
+            </div>
+            <div class="sf-range-dual">
+              <div class="sf-range-track"></div>
+              <div class="sf-range-fill" style="left:10%;right:25%"></div>
+              <div class="sf-range-thumb" style="left:10%" tabindex="0" role="slider" aria-label="Min price"></div>
+              <div class="sf-range-thumb" style="left:75%" tabindex="0" role="slider" aria-label="Max price"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span style="font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">$0</span>
+              <span style="font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">$25k</span>
+              <span style="font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">$50k</span>
+              <span style="font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">$75k</span>
+              <span style="font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">$100k</span>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-range-dual"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-range-track"</span><span class="tag">&gt;&lt;/div&gt;</span>            <span class="cmt">&lt;!-- Full track --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-range-fill"</span>
+       <span class="attr">style</span>=<span class="val">"left:10%;right:25%"</span><span class="tag">&gt;&lt;/div&gt;</span>  <span class="cmt">&lt;!-- Active range --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-range-thumb"</span>
+       <span class="attr">style</span>=<span class="val">"left:10%"</span><span class="tag">&gt;&lt;/div&gt;</span>             <span class="cmt">&lt;!-- Min handle --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-range-thumb"</span>
+       <span class="attr">style</span>=<span class="val">"left:75%"</span><span class="tag">&gt;&lt;/div&gt;</span>            <span class="cmt">&lt;!-- Max handle --&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">/* CSS */</span>
+<span class="cls">.sf-range-track</span> { height:4px; background:var(--canvas-elevated); border-radius:2px; }
+<span class="cls">.sf-range-fill</span>  { height:4px; background:var(--code-action); border-radius:2px; }
+<span class="cls">.sf-range-thumb</span> { width:14px; height:14px; background:var(--code-action);
+                    border:2px solid var(--canvas-surface); border-radius:50%; cursor:grab; }</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.3 Active Filter Chips Bar -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">3.3 Active Filter Chips Bar</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;padding:var(--sp-2) var(--sp-3);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md)">
+            <span style="font-size:var(--text-xs);color:var(--ink-muted);font-weight:var(--w-semibold)">Active:</span>
+            <span class="sf-chip active" style="height:22px">VMC <span class="sf-chip-x">✕</span></span>
+            <span class="sf-chip active" style="height:22px">Haas <span class="sf-chip-x">✕</span></span>
+            <span class="sf-chip active" style="height:22px">⭐ 4.5+ <span class="sf-chip-x">✕</span></span>
+            <span class="sf-chip active" style="height:22px">$10k–$75k <span class="sf-chip-x">✕</span></span>
+            <span class="sf-chip active" style="height:22px">24h <span class="sf-chip-x">✕</span></span>
+            <div style="flex:1"></div>
+            <span style="font-size:var(--text-xs);color:var(--ink-muted)"><strong style="color:var(--ink-primary)">847</strong> results</span>
+            <button class="btn btn-sm btn-surface" style="font-size:var(--text-xs)">Clear all</button>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Active Filter Chips Bar --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-active-filters"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-chip active"</span><span class="tag">&gt;</span>VMC <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-chip-x"</span><span class="tag">&gt;</span>✕<span class="tag">&lt;/span&gt;&lt;/span&gt;</span>
+  <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-chip active"</span><span class="tag">&gt;</span>Haas <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-chip-x"</span><span class="tag">&gt;</span>✕<span class="tag">&lt;/span&gt;&lt;/span&gt;</span>
+  <span class="cmt">&lt;!-- ... more chips ... --&gt;</span>
+  <span class="tag">&lt;span&gt;</span>&lt;strong&gt;847&lt;/strong&gt; results<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-surface"</span><span class="tag">&gt;</span>Clear all<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.4 Boolean Toggle -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">3.4 Boolean Toggle + Single-Select Dropdown</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row">
+          <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <span style="font-size:var(--text-xs);color:var(--ink-muted)">Accident-Free Only</span>
+            <div class="toggle on" tabindex="0" role="switch" aria-checked="true"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <span style="font-size:var(--text-xs);color:var(--ink-muted)">In Stock Only</span>
+            <div class="toggle" tabindex="0" role="switch" aria-checked="false"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <span style="font-size:var(--text-xs);color:var(--ink-muted)">Sort By</span>
+            <select class="select" style="height:var(--h-sm);font-size:var(--text-sm);width:140px">
+              <option>Relevance</option>
+              <option>Price: Low → High</option>
+              <option>Price: High → Low</option>
+              <option>Newest First</option>
+            </select>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Boolean Toggle --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"toggle on"</span> <span class="attr">tabindex</span>=<span class="val">"0"</span>
+     <span class="attr">role</span>=<span class="val">"switch"</span> <span class="attr">aria-checked</span>=<span class="val">"true"</span><span class="tag">&gt;&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Single-Select Dropdown --&gt;</span>
+<span class="tag">&lt;select</span> <span class="attr">class</span>=<span class="val">"select"</span> <span class="attr">style</span>=<span class="val">"height:var(--h-sm)"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;option&gt;</span>Relevance<span class="tag">&lt;/option&gt;</span>
+  <span class="tag">&lt;option&gt;</span>Price: Low → High<span class="tag">&lt;/option&gt;</span>
+<span class="tag">&lt;/select&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       4. LISTING CARD
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s4">
+    <div class="comp-section-title">
+      <span class="comp-section-num">4</span>
+      ListingCard
+    </div>
+    <div class="comp-section-desc">
+      Domain-aware result card with image, title, price, specs, valuation badge, source info, and actions.
+      Hover lifts the card, selection highlights with blue border.
+    </div>
+
+    <!-- 4.1 Card States -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        4.1 Card Variants
+        <span class="pill green">3 Domains</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+
+          <!-- CNC Card -->
+          <div class="sf-result-card">
+            <div class="sf-result-card-check" onclick="this.classList.toggle('checked')"></div>
+            <div class="sf-result-card-photo" style="background:linear-gradient(135deg,var(--canvas-elevated),var(--canvas-bright))">
+              <span style="font-size:32px">🔧</span>
+            </div>
+            <div class="sf-result-card-body">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="sf-result-card-title">Haas VF-2SS Super Speed Vertical Mill</span>
+                <span class="sf-deal-badge great">🟢 Great Deal</span>
+              </div>
+              <div class="sf-result-card-subtitle">2019 · 1,247 hours · Fanuc 31i-B5 · 20T ATC</div>
+              <div class="sf-result-card-price">
+                $52,500
+                <span style="font-size:11px;color:var(--code-success);font-family:var(--font-ui);font-weight:500">↓ 4.5% below avg</span>
+              </div>
+              <div class="sf-result-card-meta">📍 Dallas, TX · 342 mi · ⭐ 4.8 (23 sales) · ✓ Verified</div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-top:2px">
+                Travel: 30"×16"×20" · Spindle: 12,000 RPM · Power: 20 HP
+              </div>
+              <div class="sf-result-card-actions">
+                <button class="btn btn-sm btn-ghost">♥ Save</button>
+                <button class="btn btn-sm btn-ghost">⚖ Compare</button>
+                <button class="btn btn-sm btn-primary">🔗 View Listing</button>
+                <button class="btn btn-sm btn-ghost">📞 Contact</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endmill Card -->
+          <div class="sf-result-card">
+            <div class="sf-result-card-check"></div>
+            <div class="sf-result-card-photo" style="background:linear-gradient(135deg,rgba(92,225,230,0.08),var(--canvas-elevated))">
+              <span style="font-size:32px">⚙</span>
+            </div>
+            <div class="sf-result-card-body">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="sf-result-card-title">Harvey Tool 1/2" 3-Flute TiAlN Carbide</span>
+                <span class="sf-deal-badge fair">🟡 Fair Price</span>
+              </div>
+              <div class="sf-result-card-subtitle">0.500" DIA · 1.5" LOC · 3.0" OAL · Square End</div>
+              <div class="sf-result-card-price">
+                $24.95
+                <span style="font-size:11px;color:var(--ink-muted);font-family:var(--font-ui)">box of 10: $198 (↓21%)</span>
+              </div>
+              <div class="sf-result-card-meta">📍 Maritool · In Stock ✓ · ⭐ 4.9 (142 reviews)</div>
+              <div class="sf-result-card-actions">
+                <button class="btn btn-sm btn-ghost">♥ Save</button>
+                <button class="btn btn-sm btn-ghost">⚖ Compare</button>
+                <button class="btn btn-sm btn-success">🛒 Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Car Card -->
+          <div class="sf-result-card">
+            <div class="sf-result-card-check"></div>
+            <div class="sf-result-card-photo" style="background:linear-gradient(135deg,rgba(108,138,255,0.08),var(--canvas-elevated))">
+              <span style="font-size:32px">🚗</span>
+            </div>
+            <div class="sf-result-card-body">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="sf-result-card-title">2020 Toyota Tacoma TRD Off-Road</span>
+                <span class="sf-deal-badge great">🟢 Great Deal</span>
+              </div>
+              <div class="sf-result-card-subtitle">V6 · 4WD · Automatic · 34,200 mi</div>
+              <div class="sf-result-card-price">
+                $34,900
+                <span style="font-size:11px;color:var(--code-success);font-family:var(--font-ui);font-weight:500">↓ 8.2% below avg</span>
+              </div>
+              <div class="sf-result-card-meta">📍 Phoenix, AZ · 128 mi · ⭐ 4.7 (89 sales)</div>
+              <div class="sf-history-badges" style="margin-top:4px">
+                <span class="sf-history-badge clean">✓ Clean Title</span>
+                <span class="sf-history-badge accident-free">✓ No Accidents</span>
+                <span class="sf-history-badge owner">1 Owner</span>
+              </div>
+              <div class="sf-result-card-actions">
+                <button class="btn btn-sm btn-ghost">♥ Save</button>
+                <button class="btn btn-sm btn-ghost">⚖ Compare</button>
+                <button class="btn btn-sm btn-primary">🔗 View Listing</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 Deal Quality Badges -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">4.2 Deal Quality Badges</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row">
+          <span class="sf-deal-badge great">🟢 Great Deal</span>
+          <span class="sf-deal-badge fair">🟡 Fair Price</span>
+          <span class="sf-deal-badge above">🔴 Above Market</span>
+          <span class="sf-deal-badge new">🔵 New Listing</span>
+          <span class="sf-deal-badge drop">↓ Price Drop</span>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">/* Deal Quality Badge Classes */</span>
+<span class="cls">.sf-deal-badge.great</span>  { background:var(--sf-deal-great-bg); color:var(--sf-deal-great); }
+<span class="cls">.sf-deal-badge.fair</span>   { background:var(--sf-deal-fair-bg);  color:var(--sf-deal-fair); }
+<span class="cls">.sf-deal-badge.above</span>  { background:var(--sf-deal-above-bg); color:var(--sf-deal-above); }
+<span class="cls">.sf-deal-badge.new</span>    { background:var(--sf-deal-new-bg);   color:var(--sf-deal-new); }
+<span class="cls">.sf-deal-badge.drop</span>   { background:var(--sf-deal-drop-bg);  color:var(--sf-deal-drop); }</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.3 Card States -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">4.3 Card Interaction States</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row" style="gap:var(--sp-4)">
+          <!-- Default -->
+          <div style="max-width:200px">
+            <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Default</div>
+            <div class="sf-result-card" style="padding:8px">
+              <div style="font-size:11px;color:var(--ink-primary);font-weight:600">Haas VF-2SS</div>
+              <div style="font-size:11px;font-family:var(--font-mono);color:var(--ink-primary)">$52,500</div>
+            </div>
+          </div>
+          <!-- Hover -->
+          <div style="max-width:200px">
+            <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Hover</div>
+            <div class="sf-result-card" style="padding:8px;border-color:var(--border-strong);background:var(--canvas-raised);box-shadow:var(--shadow-lift)">
+              <div style="font-size:11px;color:var(--ink-primary);font-weight:600">Haas VF-2SS</div>
+              <div style="font-size:11px;font-family:var(--font-mono);color:var(--ink-primary)">$52,500</div>
+            </div>
+          </div>
+          <!-- Selected -->
+          <div style="max-width:200px">
+            <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Selected</div>
+            <div class="sf-result-card selected" style="padding:8px">
+              <div style="font-size:11px;color:var(--ink-primary);font-weight:600">Haas VF-2SS</div>
+              <div style="font-size:11px;font-family:var(--font-mono);color:var(--ink-primary)">$52,500</div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">/* Card States */</span>
+<span class="cls">.sf-result-card</span>         { border:1px solid var(--border-default); background:var(--canvas-surface); }
+<span class="cls">.sf-result-card:hover</span>   { border-color:var(--border-strong); background:var(--canvas-raised);
+                           box-shadow:var(--shadow-lift); }
+<span class="cls">.sf-result-card.selected</span>{ border-color:var(--code-action); box-shadow:0 0 0 1px var(--code-action); }</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       5. LISTING TABLE
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s5">
+    <div class="comp-section-title">
+      <span class="comp-section-num">5</span>
+      ListingTable
+    </div>
+    <div class="comp-section-desc">
+      Dense table view for power users. Sortable columns, row hover, inline actions,
+      column resize handles. Supports 10k+ rows via virtual scrolling.
+    </div>
+
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        5.1 Sortable Table with Inline Actions
+        <span class="pill amber">Dense</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="overflow-x:auto;border:1px solid var(--border-default);border-radius:var(--r-md)">
+            <table class="sf-comparison-table" style="min-width:700px">
+              <thead>
+                <tr>
+                  <th style="width:30px"><input type="checkbox" class="checkbox"></th>
+                  <th style="cursor:pointer">Name <span style="opacity:0.4">↕</span></th>
+                  <th style="cursor:pointer">Price <span style="opacity:0.4">↕</span></th>
+                  <th style="cursor:pointer">Year <span style="opacity:0.4">↕</span></th>
+                  <th style="cursor:pointer">Hours <span style="opacity:0.4">↕</span></th>
+                  <th>Deal</th>
+                  <th style="cursor:pointer">Location <span style="opacity:0.4">↕</span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox" class="checkbox"></td>
+                  <td style="font-weight:var(--w-semibold)">Haas VF-2SS</td>
+                  <td style="font-family:var(--font-mono);font-weight:var(--w-semibold)">$52,500</td>
+                  <td style="font-family:var(--font-mono)">2019</td>
+                  <td style="font-family:var(--font-mono)">1,247</td>
+                  <td><span class="sf-deal-badge great" style="font-size:9px">🟢 Great</span></td>
+                  <td>Dallas, TX</td>
+                  <td>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">♥</button>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">⚖</button>
+                    <button class="btn btn-sm btn-primary" style="font-size:10px;padding:0 6px">View</button>
+                  </td>
+                </tr>
+                <tr style="background:var(--canvas-surface)">
+                  <td><input type="checkbox" class="checkbox"></td>
+                  <td style="font-weight:var(--w-semibold)">DMG Mori CMX 600</td>
+                  <td style="font-family:var(--font-mono);font-weight:var(--w-semibold)">$67,000</td>
+                  <td style="font-family:var(--font-mono)">2020</td>
+                  <td style="font-family:var(--font-mono)">890</td>
+                  <td><span class="sf-deal-badge above" style="font-size:9px">🔴 Above</span></td>
+                  <td>Chicago, IL</td>
+                  <td>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">♥</button>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">⚖</button>
+                    <button class="btn btn-sm btn-primary" style="font-size:10px;padding:0 6px">View</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" class="checkbox checked"></td>
+                  <td style="font-weight:var(--w-semibold)">Mazak VTC-300C</td>
+                  <td style="font-family:var(--font-mono);font-weight:var(--w-semibold)">$58,900</td>
+                  <td style="font-family:var(--font-mono)">2018</td>
+                  <td style="font-family:var(--font-mono)">2,100</td>
+                  <td><span class="sf-deal-badge fair" style="font-size:9px">🟡 Fair</span></td>
+                  <td>Atlanta, GA</td>
+                  <td>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">♥</button>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">⚖</button>
+                    <button class="btn btn-sm btn-primary" style="font-size:10px;padding:0 6px">View</button>
+                  </td>
+                </tr>
+                <tr style="background:var(--canvas-surface)">
+                  <td><input type="checkbox" class="checkbox"></td>
+                  <td style="font-weight:var(--w-semibold)">Okuma Genos M560-V</td>
+                  <td style="font-family:var(--font-mono);font-weight:var(--w-semibold)">$48,500</td>
+                  <td style="font-family:var(--font-mono)">2017</td>
+                  <td style="font-family:var(--font-mono)">3,400</td>
+                  <td><span class="sf-deal-badge great" style="font-size:9px">🟢 Great</span></td>
+                  <td>Houston, TX</td>
+                  <td>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">♥</button>
+                    <button class="btn btn-sm btn-surface" style="font-size:10px">⚖</button>
+                    <button class="btn btn-sm btn-primary" style="font-size:10px;padding:0 6px">View</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;table</span> <span class="attr">class</span>=<span class="val">"sf-comparison-table"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;thead&gt;</span>
+    <span class="tag">&lt;tr&gt;</span>
+      <span class="tag">&lt;th</span> <span class="attr">style</span>=<span class="val">"cursor:pointer"</span><span class="tag">&gt;</span>Name ↕<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;th</span> <span class="attr">style</span>=<span class="val">"cursor:pointer"</span><span class="tag">&gt;</span>Price ↕<span class="tag">&lt;/th&gt;</span>
+      <span class="cmt">&lt;!-- ... more sortable columns ... --&gt;</span>
+    <span class="tag">&lt;/tr&gt;</span>
+  <span class="tag">&lt;/thead&gt;</span>
+  <span class="tag">&lt;tbody&gt;</span>
+    <span class="tag">&lt;tr&gt;</span>
+      <span class="tag">&lt;td&gt;</span>Haas VF-2SS<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;td</span> <span class="attr">style</span>=<span class="val">"font-family:var(--font-mono)"</span><span class="tag">&gt;</span>$52,500<span class="tag">&lt;/td&gt;</span>
+    <span class="tag">&lt;/tr&gt;</span>
+  <span class="tag">&lt;/tbody&gt;</span>
+<span class="tag">&lt;/table&gt;</span>
+
+<span class="cmt">/* Column resize: drag handle on th right edge */</span>
+<span class="cls">th</span> { position:relative; }
+<span class="cls">th::after</span> { content:''; position:absolute; right:0; top:0; bottom:0;
+             width:4px; cursor:col-resize; }
+<span class="cls">th:hover::after</span> { background:var(--code-action); }
+
+<span class="cmt">/* Virtual scrolling: render only visible rows */</span>
+<span class="cmt">/* Container height fixed, inner div height = totalRows × rowHeight */</span>
+<span class="cmt">/* translateY offset positions visible window */</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.2 Column Definitions per Vertical -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">5.2 Column Definitions per Vertical</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="bp-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="bp-card">
+              <div class="bp-label" style="color:var(--sf-domain-cnc)">🔧 CNC Columns</div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);line-height:1.8">
+                Name · Price · Deal · Year · Hours<br>
+                Travel (X/Y/Z) · Spindle · ATC<br>
+                Control · Location · Rating
+              </div>
+            </div>
+            <div class="bp-card">
+              <div class="bp-label" style="color:var(--sf-domain-endmill)">⚙ Endmill Columns</div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);line-height:1.8">
+                Name · Price · Deal · Diameter<br>
+                Flutes · Coating · Material<br>
+                LOC · OAL · Stock · Supplier
+              </div>
+            </div>
+            <div class="bp-card">
+              <div class="bp-label" style="color:var(--sf-domain-car)">🚗 Car Columns</div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);line-height:1.8">
+                Name · Price · Deal · Year · Miles<br>
+                Engine · Trans · Drivetrain<br>
+                Title · Accidents · Location
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       6. DETAIL VIEW
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s6">
+    <div class="comp-section-title">
+      <span class="comp-section-num">6</span>
+      DetailView
+    </div>
+    <div class="comp-section-desc">
+      Slide-in drawer (360px) or full-page view. Image gallery, price + valuation,
+      spec grid, AI analysis, price history chart, and action buttons.
+    </div>
+
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">6.1 Complete Detail View</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="display:flex;gap:0;border:1px solid var(--border-default);border-radius:var(--r-lg);overflow:hidden;max-height:600px">
+            <!-- Mini results list -->
+            <div style="width:280px;border-right:1px solid var(--border-default);overflow-y:auto;background:var(--canvas-base);flex-shrink:0">
+              <div style="padding:8px;font-size:10px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border-subtle)">Results</div>
+              <div style="padding:8px;background:var(--code-action-dim);border-left:2px solid var(--code-action);font-size:11px;color:var(--ink-primary);cursor:pointer">
+                <div style="font-weight:600">Haas VF-2SS</div>
+                <div style="font-family:var(--font-mono);color:var(--code-success)">$52,500</div>
+              </div>
+              <div style="padding:8px;border-left:2px solid transparent;font-size:11px;color:var(--ink-secondary);cursor:pointer">
+                <div style="font-weight:500">DMG Mori CMX 600</div>
+                <div style="font-family:var(--font-mono)">$67,000</div>
+              </div>
+              <div style="padding:8px;border-left:2px solid transparent;font-size:11px;color:var(--ink-secondary);cursor:pointer">
+                <div style="font-weight:500">Mazak VTC-300C</div>
+                <div style="font-family:var(--font-mono)">$58,900</div>
+              </div>
+            </div>
+            <!-- Detail content -->
+            <div style="flex:1;overflow-y:auto;padding:var(--sp-4);min-width:0">
+              <!-- Photo Grid -->
+              <div class="sf-photo-grid">
+                <div class="sf-photo-grid-item" style="background:linear-gradient(135deg,var(--canvas-elevated),var(--canvas-bright))">📷</div>
+                <div class="sf-photo-grid-item">📷</div>
+                <div class="sf-photo-grid-item">📷</div>
+                <div class="sf-photo-grid-item">📷</div>
+              </div>
+              <!-- Title + Price -->
+              <h2 style="font-size:var(--text-lg);font-weight:var(--w-bold);color:var(--ink-primary);margin-bottom:4px">Haas VF-2SS Super Speed</h2>
+              <div style="font-size:var(--text-sm);color:var(--ink-muted);margin-bottom:var(--sp-3)">2019 · 1,247 hours · Fanuc 31i-B5</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-3)">
+                <span style="font-size:var(--sf-price-lg);font-weight:var(--w-bold);color:var(--ink-primary);font-family:var(--font-mono)">$52,500</span>
+                <span class="sf-deal-badge great">🟢 Great Deal</span>
+              </div>
+              <div style="font-size:var(--text-sm);color:var(--ink-muted);margin-bottom:var(--sp-3)">📍 Dallas, TX · 342 mi · ⭐ 4.8 (23 sales) · ✓ Verified</div>
+              <!-- Actions -->
+              <div style="display:flex;gap:var(--sp-2);margin-bottom:var(--sp-4)">
+                <button class="btn btn-md btn-primary" style="flex:1">🔗 View Listing</button>
+                <button class="btn btn-md btn-ghost">📞</button>
+                <button class="btn btn-md btn-ghost">♥</button>
+                <button class="btn btn-md btn-ghost">⚖</button>
+              </div>
+              <!-- Spec Grid -->
+              <h4 style="font-size:var(--text-sm);font-weight:var(--w-semibold);color:var(--ink-secondary);margin-bottom:var(--sp-2)">Specifications</h4>
+              <table class="sf-spec-table">
+                <tr><td>Machine Type</td><td>Vertical Machining Center</td></tr>
+                <tr><td>Travel (X/Y/Z)</td><td>30" × 16" × 20"</td></tr>
+                <tr><td>Spindle Speed</td><td>12,000 RPM</td></tr>
+                <tr><td>Spindle Power</td><td>20 HP</td></tr>
+                <tr><td>ATC Capacity</td><td>20+1</td></tr>
+                <tr><td>Control</td><td>Fanuc 31i-B5</td></tr>
+                <tr><td>Table Size</td><td>36" × 14"</td></tr>
+                <tr><td>Weight</td><td>7,200 lbs</td></tr>
+              </table>
+              <!-- AI Analysis -->
+              <div style="margin-top:var(--sp-4);padding:var(--sp-3);background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.15);border-radius:var(--r-md)">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                  <span class="status-dot ai"></span>
+                  <span style="font-size:var(--text-sm);font-weight:var(--w-semibold);color:var(--code-ai)">AI Analysis</span>
+                </div>
+                <div style="font-size:var(--text-sm);color:var(--ink-secondary);line-height:1.5">
+                  Priced 4.5% below market avg ($55,200). Low hours (1,247) for 2019 model. Fanuc 31i-B5 control is current-gen. 20T ATC is standard config. Recommended for general-purpose VMC work.
+                </div>
+              </div>
+              <!-- Price History Chart -->
+              <div class="sf-chart" style="margin-top:var(--sp-4)">
+                <div class="sf-chart-header">
+                  <span class="sf-chart-title">📈 Price History (90 days)</span>
+                  <span style="font-size:10px;color:var(--ink-muted)">Min: $42,000 · Avg: $55,200</span>
+                </div>
+                <div class="sf-chart-canvas" style="height:120px">
+                  <svg width="100%" height="100%" viewBox="0 0 400 120" preserveAspectRatio="none">
+                    <line x1="0" y1="30" x2="400" y2="30" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                    <line x1="0" y1="60" x2="400" y2="60" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                    <line x1="0" y1="90" x2="400" y2="90" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                    <line x1="0" y1="55" x2="400" y2="55" stroke="var(--sf-chart-avg)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <polyline points="0,80 40,75 80,70 120,65 160,60 200,55 240,58 280,50 320,48 360,52 400,45" fill="none" stroke="var(--sf-chart-line)" stroke-width="2"/>
+                    <polyline points="0,80 40,75 80,70 120,65 160,60 200,55 240,58 280,50 320,48 360,52 400,45 400,120 0,120" fill="var(--sf-chart-fill)" opacity="0.5"/>
+                    <circle cx="400" cy="45" r="4" fill="var(--sf-chart-line)"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       7. COMPARISON VIEW
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s7">
+    <div class="comp-section-title">
+      <span class="comp-section-num">7</span>
+      ComparisonView
+    </div>
+    <div class="comp-section-desc">
+      Side-by-side comparison of 2–4 items. Difference highlighting, delta indicators,
+      missing data handling. Floating tray at bottom.
+    </div>
+
+    <!-- 7.1 Comparison Tray -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">7.1 Floating Comparison Tray</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="sf-comparison-tray" style="position:relative;left:auto;right:auto;bottom:auto;border-radius:var(--r-lg)">
+            <span class="sf-comparison-tray-label">⚖ Compare (2/4)</span>
+            <div class="sf-comparison-tray-items">
+              <div class="sf-comparison-slot occupied">
+                <div class="sf-comparison-slot-name">Haas VF-2SS</div>
+                <div class="sf-comparison-slot-price">$52,500</div>
+              </div>
+              <div class="sf-comparison-slot occupied">
+                <div class="sf-comparison-slot-name">DMG Mori CMX</div>
+                <div class="sf-comparison-slot-price">$67,000</div>
+              </div>
+              <div class="sf-comparison-slot">+ Add item</div>
+              <div class="sf-comparison-slot">+ Add item</div>
+            </div>
+            <button class="btn btn-sm btn-primary">Open Table</button>
+            <button class="btn btn-sm btn-surface">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7.2 Full Comparison Table -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        7.2 Side-by-Side Comparison Table
+        <span class="pill process">Difference Highlighting</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="overflow-x:auto">
+            <table class="sf-comparison-table">
+              <thead>
+                <tr>
+                  <th style="width:140px">Field</th>
+                  <th style="min-width:160px">Haas VF-2SS</th>
+                  <th style="min-width:160px">DMG Mori CMX 600</th>
+                  <th style="min-width:160px">Mazak VTC-300C</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="field-label">Price</td>
+                  <td class="best" style="font-family:var(--font-mono);font-weight:var(--w-semibold)">$52,500 🟢</td>
+                  <td class="worst" style="font-family:var(--font-mono)">$67,000 🔴</td>
+                  <td style="font-family:var(--font-mono)">$58,900 🟡</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Δ vs Market Avg</td>
+                  <td class="best">-4.5%</td>
+                  <td class="worst">+21.8%</td>
+                  <td>+7.1%</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Year</td>
+                  <td>2019</td>
+                  <td class="best">2020</td>
+                  <td>2018</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Hours</td>
+                  <td style="font-family:var(--font-mono)">1,247</td>
+                  <td class="best" style="font-family:var(--font-mono)">890</td>
+                  <td class="worst" style="font-family:var(--font-mono)">2,100</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Travel (X/Y/Z)</td>
+                  <td style="font-family:var(--font-mono)">30×16×20</td>
+                  <td style="font-family:var(--font-mono)">31×20×20</td>
+                  <td class="best" style="font-family:var(--font-mono)">52×28×25</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Spindle</td>
+                  <td style="font-family:var(--font-mono)">12,000 RPM</td>
+                  <td class="best" style="font-family:var(--font-mono)">15,000 RPM</td>
+                  <td style="font-family:var(--font-mono)">12,000 RPM</td>
+                </tr>
+                <tr>
+                  <td class="field-label">ATC</td>
+                  <td style="font-family:var(--font-mono)">20+1</td>
+                  <td style="font-family:var(--font-mono)">30+1</td>
+                  <td class="best" style="font-family:var(--font-mono)">40+1</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Control</td>
+                  <td>Fanuc 31i</td>
+                  <td>Siemens 840D</td>
+                  <td>Mazatrol Matrix</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Location</td>
+                  <td>Dallas, TX</td>
+                  <td>Chicago, IL</td>
+                  <td>Atlanta, GA</td>
+                </tr>
+                <tr>
+                  <td class="field-label">Rating</td>
+                  <td class="best">⭐ 4.8 (23)</td>
+                  <td>⭐ 4.6 (17)</td>
+                  <td>⭐ 4.5 (31)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;table</span> <span class="attr">class</span>=<span class="val">"sf-comparison-table"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;thead&gt;</span>
+    <span class="tag">&lt;tr&gt;</span>
+      <span class="tag">&lt;th&gt;</span>Field<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;th&gt;</span>Haas VF-2SS<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;th&gt;</span>DMG Mori CMX<span class="tag">&lt;/th&gt;</span>
+    <span class="tag">&lt;/tr&gt;</span>
+  <span class="tag">&lt;/thead&gt;</span>
+  <span class="tag">&lt;tbody&gt;</span>
+    <span class="tag">&lt;tr&gt;</span>
+      <span class="tag">&lt;td</span> <span class="attr">class</span>=<span class="val">"field-label"</span><span class="tag">&gt;</span>Price<span class="tag">&lt;/td&gt;</span>
+      <span class="tag">&lt;td</span> <span class="attr">class</span>=<span class="val">"best"</span><span class="tag">&gt;</span>$52,500 🟢<span class="tag">&lt;/td&gt;</span>  <span class="cmt">&lt;!-- best value --&gt;</span>
+      <span class="tag">&lt;td</span> <span class="attr">class</span>=<span class="val">"worst"</span><span class="tag">&gt;</span>$67,000 🔴<span class="tag">&lt;/td&gt;</span> <span class="cmt">&lt;!-- worst value --&gt;</span>
+    <span class="tag">&lt;/tr&gt;</span>
+  <span class="tag">&lt;/tbody&gt;</span>
+<span class="tag">&lt;/table&gt;</span>
+
+<span class="cmt">/* Difference highlighting */</span>
+<span class="cls">.sf-comparison-table .best</span>  { color:var(--code-success); font-weight:var(--w-semibold); }
+<span class="cls">.sf-comparison-table .worst</span> { color:var(--code-danger); opacity:0.8; }
+<span class="cls">.sf-comparison-table .field-label</span> { color:var(--ink-muted); font-weight:var(--w-medium); }</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       8. COMMAND PALETTE
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s8">
+    <div class="comp-section-title">
+      <span class="comp-section-num">8</span>
+      CommandPalette
+    </div>
+    <div class="comp-section-desc">
+      Global Cmd+K overlay with search input, categorized results, keyboard navigation,
+      and recent searches. Blurs background.
+    </div>
+
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        8.1 Command Palette
+        <span class="pill magenta">Cmd+K</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview" style="background:rgba(0,0,0,0.3);min-height:400px;align-items:center;justify-content:center">
+          <div class="sf-cmd-palette" style="width:560px">
+            <div class="sf-cmd-input-row">
+              <span style="color:var(--ink-muted);font-size:14px">🔍</span>
+              <input class="sf-cmd-input" type="text" value="Haas" placeholder="Type a command or search...">
+              <span class="kbd" style="font-size:9px">Esc</span>
+            </div>
+            <div class="sf-cmd-results">
+              <div class="sf-cmd-group-label">Recent Searches</div>
+              <div class="sf-cmd-item selected">
+                <span class="sf-cmd-item-icon">🔧</span>
+                Haas VF-2
+                <span class="sf-cmd-item-shortcut"><span class="kbd">2h ago</span></span>
+              </div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">🔧</span>
+                Haas UMC-750SS 5-Axis
+              </div>
+              <div class="sf-cmd-group-label">Saved Searches</div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">📁</span>
+                Under $50k CNC
+                <span class="sf-cmd-item-shortcut"><span class="kbd">pinned</span></span>
+              </div>
+              <div class="sf-cmd-group-label">Commands</div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">🔧</span>
+                Switch to CNC domain
+                <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+1</span></span>
+              </div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">📁</span>
+                Open saved searches
+                <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+S</span></span>
+              </div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">📤</span>
+                Export current results
+                <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+E</span></span>
+              </div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">🔔</span>
+                Create new alert
+                <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+Shift+A</span></span>
+              </div>
+              <div class="sf-cmd-item">
+                <span class="sf-cmd-item-icon">❓</span>
+                Show keyboard shortcuts
+                <span class="sf-cmd-item-shortcut"><span class="kbd">?</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Command Palette Overlay --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-overlay"</span> <span class="attr">id</span>=<span class="val">"cmdPalette"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-palette"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-input-row"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;input</span> <span class="attr">class</span>=<span class="val">"sf-cmd-input"</span> <span class="attr">placeholder</span>=<span class="val">"Type a command..."</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"kbd"</span><span class="tag">&gt;</span>Esc<span class="tag">&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-results"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-group-label"</span><span class="tag">&gt;</span>Recent Searches<span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-cmd-item selected"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"sf-cmd-item-icon"</span><span class="tag">&gt;</span>🔧<span class="tag">&lt;/span&gt;</span>
+        Haas VF-2
+      <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">/* Keyboard navigation */</span>
+<span class="cmt">/* Ctrl+K opens, Escape closes */</span>
+<span class="cmt">/* ArrowUp/ArrowDown navigate items */</span>
+<span class="cmt">/* Enter executes selected item */</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       9. PAGINATION
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s9">
+    <div class="comp-section-title">
+      <span class="comp-section-num">9</span>
+      Pagination
+    </div>
+    <div class="comp-section-desc">
+      Page numbers, Previous/Next, items per page selector, total count display.
+    </div>
+
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">9.1 Full Pagination Bar</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-3) var(--sp-4);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md)">
+            <div style="font-size:var(--text-sm);color:var(--ink-muted)">
+              Showing <strong style="color:var(--ink-primary)">1–20</strong> of <strong style="color:var(--ink-primary)">12,847</strong> results
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--sp-2)">
+              <span style="font-size:var(--text-xs);color:var(--ink-muted)">Per page:</span>
+              <select class="select" style="height:var(--h-sm);font-size:var(--text-sm);width:64px">
+                <option>20</option>
+                <option>50</option>
+                <option>100</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--sp-1)">
+              <button class="btn btn-sm btn-ghost" disabled style="opacity:0.3">← Prev</button>
+              <button class="btn btn-sm btn-primary">1</button>
+              <button class="btn btn-sm btn-ghost">2</button>
+              <button class="btn btn-sm btn-ghost">3</button>
+              <button class="btn btn-sm btn-ghost">4</button>
+              <span style="color:var(--ink-muted);font-size:var(--text-sm)">…</span>
+              <button class="btn btn-sm btn-ghost">643</button>
+              <button class="btn btn-sm btn-ghost">Next →</button>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Pagination Bar --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-pagination"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-pagination-info"</span><span class="tag">&gt;</span>
+    Showing &lt;strong&gt;1–20&lt;/strong&gt; of &lt;strong&gt;12,847&lt;/strong&gt;
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-pagination-perpage"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;select</span> <span class="attr">class</span>=<span class="val">"select"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;option&gt;</span>20<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option&gt;</span>50<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option&gt;</span>100<span class="tag">&lt;/option&gt;</span>
+    <span class="tag">&lt;/select&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-pagination-pages"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-ghost"</span><span class="tag">&gt;</span>← Prev<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-primary"</span><span class="tag">&gt;</span>1<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-ghost"</span><span class="tag">&gt;</span>2<span class="tag">&lt;/button&gt;</span>
+    <span class="cmt">&lt;!-- ... --&gt;</span>
+    <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-ghost"</span><span class="tag">&gt;</span>Next →<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9.2 Compact Pagination -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">9.2 Compact Pagination (for tables)</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row" style="justify-content:center">
+          <div style="display:flex;align-items:center;gap:var(--sp-1);padding:4px 8px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm)">
+            <button class="btn btn-sm btn-surface" style="font-size:10px;padding:0 4px" disabled>◀</button>
+            <button class="btn btn-sm btn-primary" style="font-size:10px;min-width:24px;height:24px;padding:0">1</button>
+            <button class="btn btn-sm btn-surface" style="font-size:10px;min-width:24px;height:24px;padding:0">2</button>
+            <button class="btn btn-sm btn-surface" style="font-size:10px;min-width:24px;height:24px;padding:0">3</button>
+            <span style="font-size:10px;color:var(--ink-muted);padding:0 2px">…</span>
+            <button class="btn btn-sm btn-surface" style="font-size:10px;min-width:24px;height:24px;padding:0">643</button>
+            <button class="btn btn-sm btn-surface" style="font-size:10px;padding:0 4px">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       10. STATUS COMPONENTS
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="comp-section" id="s10">
+    <div class="comp-section-title">
+      <span class="comp-section-num">10</span>
+      Status Components
+    </div>
+    <div class="comp-section-desc">
+      Loading skeleton, empty state, error state, success toast, warning alert.
+      All use existing design system tokens and animations.
+    </div>
+
+    <!-- 10.1 Loading Skeleton -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">
+        10.1 Loading Skeleton
+        <span class="pill blue">Animated</span>
+      </div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <div class="sf-skeleton-card">
+              <div class="sf-skeleton-photo skeleton"></div>
+              <div class="sf-skeleton-body">
+                <div class="sf-skeleton-line skeleton w80"></div>
+                <div class="sf-skeleton-line skeleton w60"></div>
+                <div class="sf-skeleton-line skeleton w40" style="margin-top:4px"></div>
+                <div class="sf-skeleton-line skeleton w30"></div>
+              </div>
+            </div>
+            <div class="sf-skeleton-card">
+              <div class="sf-skeleton-photo skeleton"></div>
+              <div class="sf-skeleton-body">
+                <div class="sf-skeleton-line skeleton w80"></div>
+                <div class="sf-skeleton-line skeleton w60"></div>
+                <div class="sf-skeleton-line skeleton w40" style="margin-top:4px"></div>
+                <div class="sf-skeleton-line skeleton w30"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="cmt">&lt;!-- Skeleton Card (domain-aware) --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-card"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-photo skeleton"</span><span class="tag">&gt;&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-body"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-line skeleton w80"</span><span class="tag">&gt;&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-line skeleton w60"</span><span class="tag">&gt;&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sf-skeleton-line skeleton w40"</span><span class="tag">&gt;&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">/* Skeleton CSS (from tokens.css) */</span>
+<span class="cls">.skeleton</span> { background:var(--canvas-bright); border-radius:var(--r-sm);
+             animation:skeletonPulse 1.5s ease-in-out infinite; }
+<span class="cls">@keyframes skeletonPulse</span> { 0%,100%{opacity:0.3} 50%{opacity:0.6} }</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10.2 Empty State -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">10.2 Empty State</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview center" style="min-height:200px">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-title">No results found</div>
+            <div class="empty-state-desc">
+              Try adjusting your filters or search terms. You can also
+              broaden your location radius or price range.
+            </div>
+            <button class="btn btn-md btn-primary" style="margin-top:var(--sp-3)">Reset All Filters</button>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"empty-state"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"empty-state-icon"</span><span class="tag">&gt;</span>🔍<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"empty-state-title"</span><span class="tag">&gt;</span>No results found<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"empty-state-desc"</span><span class="tag">&gt;</span>
+    Try adjusting your filters or search terms.
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-md btn-primary"</span><span class="tag">&gt;</span>Reset All Filters<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10.3 Error State -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">10.3 Error State</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="alert error" style="max-width:500px">
+            <div class="alert-icon">✕</div>
+            <div class="alert-body">
+              <div class="alert-title">Search Failed</div>
+              <div class="alert-msg">Unable to connect to the search index. Check your network connection and try again.</div>
+            </div>
+            <button class="btn btn-sm btn-danger">Retry</button>
+          </div>
+          <div class="alert error inline" style="max-width:500px">
+            <div class="alert-icon">✕</div>
+            <div class="alert-body">
+              <div class="alert-msg">API rate limit exceeded. Please wait 30 seconds.</div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert error"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-icon"</span><span class="tag">&gt;</span>✕<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-body"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-title"</span><span class="tag">&gt;</span>Search Failed<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-msg"</span><span class="tag">&gt;</span>Unable to connect...<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="val">"btn btn-sm btn-danger"</span><span class="tag">&gt;</span>Retry<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10.4 Success Toast -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">10.4 Success Toast</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="alert success" style="max-width:400px">
+            <div class="alert-icon">✓</div>
+            <div class="alert-body">
+              <div class="alert-title">Search Saved</div>
+              <div class="alert-msg">Your search "Under $50k CNC" has been saved to your watchlist.</div>
+            </div>
+          </div>
+          <div class="alert info" style="max-width:400px">
+            <div class="alert-icon">ℹ</div>
+            <div class="alert-body">
+              <div class="alert-title">Price Alert Set</div>
+              <div class="alert-msg">You'll be notified when Haas VF-2 drops below $50,000.</div>
+            </div>
+          </div>
+        </div>
+        <div class="comp-showcase-code">
+<pre><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert success"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-icon"</span><span class="tag">&gt;</span>✓<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-body"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-title"</span><span class="tag">&gt;</span>Search Saved<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"alert-msg"</span><span class="tag">&gt;</span>Your search has been saved.<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">/* Alert Variants */</span>
+<span class="cls">.alert.info</span>    { background:rgba(124,224,255,0.08);  color:var(--code-info); }
+<span class="cls">.alert.success</span> { background:rgba(78,203,113,0.08);   color:var(--code-success); }
+<span class="cls">.alert.warning</span> { background:rgba(255,186,66,0.1);    color:var(--code-warning); }
+<span class="cls">.alert.error</span>   { background:rgba(255,107,107,0.1);    color:var(--code-danger); }
+<span class="cls">.alert.ai</span>      { background:rgba(244,114,182,0.08);  color:var(--code-ai); }</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10.5 Warning Alert -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">10.5 Warning Alert</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview">
+          <div class="alert warning" style="max-width:500px">
+            <div class="alert-icon">⚠</div>
+            <div class="alert-body">
+              <div class="alert-title">Limited Results</div>
+              <div class="alert-msg">Only 3 results match your current filters. Try broadening your search criteria.</div>
+            </div>
+            <button class="btn btn-sm btn-warning">Adjust Filters</button>
+          </div>
+          <div class="alert ai" style="max-width:500px">
+            <div class="alert-icon">🤖</div>
+            <div class="alert-body">
+              <div class="alert-title">AI Suggestion</div>
+              <div class="alert-msg">Removing the "Haas" manufacturer filter would show 47 additional CNC machines in your price range.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10.6 All Status Dots -->
+    <div class="comp-subsection">
+      <div class="comp-subsection-title">10.6 Status Dots + Pills</div>
+      <div class="comp-showcase">
+        <div class="comp-showcase-preview row">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot on"></span>
+            <span style="font-size:var(--text-sm);color:var(--ink-secondary)">Live / Connected</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot warning"></span>
+            <span style="font-size:var(--text-sm);color:var(--ink-secondary)">Limited Stock</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot error"></span>
+            <span style="font-size:var(--text-sm);color:var(--ink-secondary)">Sync Failed</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot ai"></span>
+            <span style="font-size:var(--text-sm);color:var(--ink-secondary)">AI Processing</span>
+          </div>
+          <div style="width:1px;height:16px;background:var(--border-default);margin:0 4px"></div>
+          <span class="pill green">In Stock</span>
+          <span class="pill amber">Limited</span>
+          <span class="pill red">Out of Stock</span>
+          <span class="pill blue">New Listing</span>
+          <span class="pill magenta">AI Recommended</span>
+          <span class="pill muted">Archived</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+  // ── Smooth scroll for nav links ──────────────────────────────
+  document.querySelectorAll('.comp-nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // ── Highlight active nav on scroll ───────────────────────────
+  const sections = document.querySelectorAll('.comp-section');
+  const navLinks = document.querySelectorAll('.comp-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const id = entry.target.id;
+        const link = document.querySelector(`.comp-nav a[href="#${id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-80px 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // ── Toggle command palette ───────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      // In production: open command palette
+    }
+  });
+</script>
+
+</body>
+</html>

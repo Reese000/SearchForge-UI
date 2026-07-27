@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchForge — Universal Shopping Search Engine</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="tokens-searchforge.css">
+  <style>
+    /* ── APP SHELL ─────────────────────────────────────────────── */
+    html, body { height: 100%; overflow: hidden; }
+    .sf-app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--canvas-void);
+    }
+    .sf-titlebar {
+      height: 32px;
+      background: var(--canvas-base);
+      border-bottom: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 8px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+    .sf-titlebar-icon {
+      width: 16px; height: 16px;
+      background: var(--code-action);
+      border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: #fff; font-weight: 700;
+    }
+    .sf-titlebar-text {
+      font-size: 11px; color: var(--ink-muted); font-weight: 500;
+    }
+    .sf-titlebar-spacer { flex: 1; }
+    .sf-win-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-muted); cursor: pointer; border: none; background: none;
+      font-size: 12px; border-radius: var(--r-xs);
+    }
+    .sf-win-btn:hover { background: var(--canvas-raised); color: var(--ink-primary); }
+    .sf-win-btn.close:hover { background: var(--code-danger); color: #fff; }
+
+    .sf-main-wrap {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── CONTENT AREA ──────────────────────────────────────────── */
+    .sf-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .sf-search-row {
+      padding: var(--sp-3) var(--sp-4);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--canvas-base);
+    }
+    .sf-content-body {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+    .sf-results-area {
+      flex: 1;
+      padding: var(--sp-3) var(--sp-4);
+      overflow-y: auto;
+      min-width: 0;
+    }
+    .sf-results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-3);
+    }
+    .sf-results-count {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+    .sf-results-count strong {
+      color: var(--ink-primary);
+      font-weight: var(--w-semibold);
+    }
+    .sf-results-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .sf-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    /* ── DETAIL DRAWER ─────────────────────────────────────────── */
+    .sf-detail-drawer {
+      width: 0;
+      background: var(--canvas-base);
+      border-left: 1px solid var(--border-default);
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: width 200ms var(--ease-out);
+      flex-shrink: 0;
+    }
+    .sf-detail-drawer.open {
+      width: var(--sf-detail-width);
+    }
+    .sf-detail-drawer-inner {
+      width: var(--sf-detail-width);
+      padding: var(--sp-4);
+    }
+    .sf-detail-close {
+      position: absolute;
+      top: var(--sp-2);
+      right: var(--sp-2);
+    }
+
+    /* ── PHOTO GRID ────────────────────────────────────────────── */
+    .sf-photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      border-radius: var(--r-md);
+      overflow: hidden;
+      margin-bottom: var(--sp-3);
+    }
+    .sf-photo-grid-item {
+      aspect-ratio: 4/3;
+      background: var(--canvas-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-ghost);
+      font-size: 20px;
+      cursor: pointer;
+      transition: opacity 80ms;
+    }
+    .sf-photo-grid-item:hover { opacity: 0.8; }
+    .sf-photo-grid-item:first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+      font-size: 32px;
+    }
+
+    /* ── SPEC TABLE ────────────────────────────────────────────── */
+    .sf-spec-table {
+      width: 100%;
+      font-size: var(--text-sm);
+    }
+    .sf-spec-table tr {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sf-spec-table td {
+      padding: 6px 0;
+    }
+    .sf-spec-table td:first-child {
+      color: var(--ink-muted);
+      width: 40%;
+      font-weight: var(--w-medium);
+    }
+    .sf-spec-table td:last-child {
+      color: var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+    }
+
+    /* ── VEHICLE HISTORY BADGES ────────────────────────────────── */
+    .sf-history-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-1);
+    }
+    .sf-history-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: var(--r-sm);
+      font-size: 10px;
+      font-weight: var(--w-semibold);
+    }
+    .sf-history-badge.clean {
+      background: rgba(78,203,113,0.12);
+      color: var(--code-success);
+    }
+    .sf-history-badge.salvage {
+      background: rgba(255,107,107,0.12);
+      color: var(--code-danger);
+    }
+    .sf-history-badge.owner {
+      background: rgba(108,138,255,0.12);
+      color: var(--code-action);
+    }
+    .sf-history-badge.accident-free {
+      background: rgba(78,203,113,0.12);
+      color: var(--code-success);
+    }
+
+    /* ── MILEAGE SLIDER ────────────────────────────────────────── */
+    .sf-mileage-slider {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .sf-mileage-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+    }
+    .sf-mileage-presets {
+      display: flex;
+      gap: var(--sp-1);
+    }
+
+    /* ── COATING COMPARISON (Endmill) ──────────────────────────── */
+    .sf-coating-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-2);
+    }
+    .sf-coating-card {
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-sm);
+      padding: var(--sp-2);
+      text-align: center;
+      cursor: pointer;
+      transition: all 80ms;
+    }
+    .sf-coating-card:hover {
+      border-color: var(--border-strong);
+      background: var(--canvas-raised);
+    }
+    .sf-coating-card.selected {
+      border-color: var(--sf-domain-endmill);
+      background: rgba(92,225,230,0.08);
+    }
+    .sf-coating-name {
+      font-size: var(--text-xs);
+      font-weight: var(--w-semibold);
+      color: var(--ink-primary);
+      margin-bottom: 2px;
+    }
+    .sf-coating-temp {
+      font-size: 10px;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ── DIAMETER SELECTOR (Endmill) ───────────────────────────── */
+    .sf-diameter-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-1);
+    }
+    .sf-diameter-chip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: var(--h-sm);
+      padding: 0 8px;
+      background: var(--canvas-raised);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-sm);
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: all 80ms;
+    }
+    .sf-diameter-chip:hover {
+      background: var(--canvas-elevated);
+      border-color: var(--border-strong);
+    }
+    .sf-diameter-chip.active {
+      background: rgba(92,225,230,0.12);
+      border-color: var(--sf-domain-endmill);
+      color: var(--sf-domain-endmill);
+    }
+
+    /* ── VIN DECODER INPUT ─────────────────────────────────────── */
+    .sf-vin-input {
+      display: flex;
+      gap: var(--sp-2);
+      align-items: flex-end;
+    }
+    .sf-vin-input .input {
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .sf-vin-result {
+      margin-top: var(--sp-2);
+      padding: var(--sp-2);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-sm);
+      font-size: var(--text-sm);
+    }
+    .sf-vin-result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+    .sf-vin-result-label { color: var(--ink-muted); }
+    .sf-vin-result-value { color: var(--ink-primary); font-weight: var(--w-medium); }
+
+    /* ── RADAR CHART (SVG) ─────────────────────────────────────── */
+    .sf-radar-chart {
+      display: flex;
+      justify-content: center;
+      padding: var(--sp-3) 0;
+    }
+
+    /* ── SPARKLINE ─────────────────────────────────────────────── */
+    .sf-sparkline {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* ── FLOATING COMPARISON TRAY ──────────────────────────────── */
+    .sf-comparison-tray-wrap {
+      position: fixed;
+      bottom: var(--sf-statusbar-height);
+      left: var(--sf-sidebar-width);
+      right: 0;
+      z-index: 30;
+      transition: transform 200ms var(--ease-out);
+    }
+    .sf-comparison-tray-wrap.hidden {
+      transform: translateY(100%);
+    }
+
+    /* ── COMMAND PALETTE ───────────────────────────────────────── */
+    .sf-cmd-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      backdrop-filter: blur(4px);
+    }
+    .sf-cmd-overlay.open { display: flex; }
+    .sf-cmd-palette {
+      width: 560px;
+      max-width: 90vw;
+      background: var(--canvas-raised);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-dialog);
+      overflow: hidden;
+      animation: fadeSlideIn 120ms var(--ease-out);
+    }
+    .sf-cmd-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sf-cmd-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ink-primary);
+      font-family: var(--font-ui);
+      font-size: var(--text-md);
+    }
+    .sf-cmd-input::placeholder { color: var(--ink-muted); }
+    .sf-cmd-results {
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .sf-cmd-group-label {
+      padding: 6px 12px 4px;
+      font-size: 10px;
+      font-weight: var(--w-semibold);
+      color: var(--ink-ghost);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .sf-cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      font-size: var(--text-base);
+      color: var(--ink-secondary);
+      transition: all 60ms;
+    }
+    .sf-cmd-item:hover, .sf-cmd-item.selected {
+      background: var(--canvas-elevated);
+      color: var(--ink-primary);
+    }
+    .sf-cmd-item-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .sf-cmd-item-shortcut {
+      margin-left: auto;
+    }
+
+    /* ── KEYBOARD SHORTCUTS OVERLAY ────────────────────────────── */
+    .sf-shortcuts-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .sf-shortcuts-overlay.open { display: flex; }
+    .sf-shortcuts-panel {
+      width: 600px;
+      max-width: 90vw;
+      max-height: 80vh;
+      background: var(--canvas-raised);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-dialog);
+      overflow-y: auto;
+      padding: var(--sp-4);
+    }
+    .sf-shortcuts-title {
+      font-size: var(--text-lg);
+      font-weight: var(--w-bold);
+      color: var(--ink-primary);
+      margin-bottom: var(--sp-3);
+    }
+    .sf-shortcuts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-2);
+    }
+    .sf-shortcut-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: var(--r-sm);
+    }
+    .sf-shortcut-row:hover { background: var(--canvas-elevated); }
+    .sf-shortcut-action {
+      font-size: var(--text-sm);
+      color: var(--ink-secondary);
+    }
+    .sf-shortcut-keys {
+      display: flex;
+      gap: 3px;
+    }
+
+    /* ── VIEW TOGGLE in results header ─────────────────────────── */
+    .sf-results-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    /* ── AUTOCOMPLETE DROPDOWN ─────────────────────────────────── */
+    .sf-autocomplete {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--canvas-raised);
+      border: 1px solid var(--border-strong);
+      border-radius: 0 0 var(--r-md) var(--r-md);
+      box-shadow: var(--shadow-float);
+      z-index: 50;
+      display: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .sf-autocomplete.open { display: block; animation: fadeSlideIn 100ms var(--ease-out); }
+    .sf-autocomplete-group {
+      padding: var(--sp-1) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sf-autocomplete-group:last-child { border-bottom: none; }
+    .sf-autocomplete-label {
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: var(--w-semibold);
+      color: var(--ink-ghost);
+      text-transform: uppercase;
+    }
+    .sf-autocomplete-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: var(--text-base);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: background 60ms;
+    }
+    .sf-autocomplete-item:hover {
+      background: var(--canvas-elevated);
+      color: var(--ink-primary);
+    }
+    .sf-autocomplete-item-domain {
+      font-size: 10px;
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-weight: var(--w-semibold);
+    }
+    .sf-autocomplete-item-domain.cnc { background: var(--sf-domain-cnc-dim); color: var(--sf-domain-cnc); }
+    .sf-autocomplete-item-domain.endmill { background: var(--sf-domain-endmill-dim); color: var(--sf-domain-endmill); }
+    .sf-autocomplete-item-domain.car { background: var(--sf-domain-car-dim); color: var(--sf-domain-car); }
+
+    /* ── PRICE RANGE with dual handles ─────────────────────────── */
+    .sf-range-dual {
+      position: relative;
+      height: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .sf-range-track {
+      position: absolute;
+      left: 0; right: 0;
+      height: 4px;
+      background: var(--canvas-elevated);
+      border-radius: 2px;
+    }
+    .sf-range-fill {
+      position: absolute;
+      height: 4px;
+      background: var(--code-action);
+      border-radius: 2px;
+    }
+    .sf-range-thumb {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: var(--code-action);
+      border: 2px solid var(--canvas-surface);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: grab;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    /* ── PRINT STYLES ──────────────────────────────────────────── */
+    @media print {
+      .sf-titlebar, .sf-sidebar, .sf-statusbar, .sf-comparison-tray-wrap,
+      .sf-cmd-overlay, .sf-shortcuts-overlay, .sf-search-row, .sf-filter-panel { display: none !important; }
+      .sf-app { display: block; }
+      .sf-main-wrap { display: block; }
+      .sf-results-area { padding: 0; }
+      body { background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+<div class="sf-app">
+
+  <!-- ═══════════ TITLEBAR ═══════════ -->
+  <div class="sf-titlebar">
+    <div class="sf-titlebar-icon">SF</div>
+    <div class="sf-titlebar-text">SearchForge</div>
+    <div class="sf-titlebar-spacer"></div>
+    <button class="sf-win-btn" title="Minimize">─</button>
+    <button class="sf-win-btn" title="Maximize">□</button>
+    <button class="sf-win-btn close" title="Close">✕</button>
+  </div>
+
+  <div class="sf-main-wrap">
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <div class="sf-sidebar">
+      <div class="sf-sidebar-brand">
+        <div class="sf-sidebar-brand-icon">SF</div>
+        <span class="sf-sidebar-brand-text">SearchForge</span>
+        <span class="sf-sidebar-brand-ver">v1.0</span>
+      </div>
+
+      <div class="sf-nav-group">
+        <div class="sf-nav-item active" data-nav="search">
+          <span class="sf-nav-item-icon">🔍</span>
+          <span class="sf-nav-item-label">Search</span>
+        </div>
+        <div class="sf-nav-item" data-nav="dashboard">
+          <span class="sf-nav-item-icon">📊</span>
+          <span class="sf-nav-item-label">Dashboard</span>
+          <span class="sf-nav-item-badge">12.8k</span>
+        </div>
+        <div class="sf-nav-item" data-nav="alerts">
+          <span class="sf-nav-item-icon">🔔</span>
+          <span class="sf-nav-item-label">Alerts</span>
+          <span class="sf-nav-item-badge">3</span>
+        </div>
+        <div class="sf-nav-item" data-nav="compare">
+          <span class="sf-nav-item-icon">⚖</span>
+          <span class="sf-nav-item-label">Compare</span>
+        </div>
+        <div class="sf-nav-item" data-nav="watchlist">
+          <span class="sf-nav-item-icon">♥</span>
+          <span class="sf-nav-item-label">Watchlist</span>
+          <span class="sf-nav-item-badge">8</span>
+        </div>
+        <div class="sf-nav-item" data-nav="trends">
+          <span class="sf-nav-item-icon">📈</span>
+          <span class="sf-nav-item-label">Trends</span>
+        </div>
+        <div class="sf-nav-item" data-nav="map">
+          <span class="sf-nav-item-icon">🗺</span>
+          <span class="sf-nav-item-label">Map</span>
+        </div>
+      </div>
+
+      <div class="sf-nav-group">
+        <div class="sf-nav-group-label">Recent Searches</div>
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon" style="color:var(--sf-domain-cnc)">🔧</span>
+          <span class="sf-nav-item-label">Haas VF-2</span>
+        </div>
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon" style="color:var(--sf-domain-endmill)">⚙</span>
+          <span class="sf-nav-item-label">1/2" TiAlN endmill</span>
+        </div>
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon" style="color:var(--sf-domain-car)">🚗</span>
+          <span class="sf-nav-item-label">2020 Tacoma</span>
+        </div>
+      </div>
+
+      <div class="sf-nav-group">
+        <div class="sf-nav-group-label">Saved Searches</div>
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon">📁</span>
+          <span class="sf-nav-item-label">Under $50k CNC</span>
+        </div>
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon">📁</span>
+          <span class="sf-nav-item-label">Premium endmills</span>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div class="sf-nav-group" style="border-top:1px solid var(--border-subtle)">
+        <div class="sf-nav-item">
+          <span class="sf-nav-item-icon">⚙</span>
+          <span class="sf-nav-item-label">Settings</span>
+        </div>
+        <div class="sf-nav-item" onclick="toggleShortcuts()">
+          <span class="sf-nav-item-icon">❓</span>
+          <span class="sf-nav-item-label">Help</span>
+          <span class="kbd">?</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ CONTENT ═══════════ -->
+    <div class="sf-content">
+
+      <!-- Search Bar Row -->
+      <div class="sf-search-row" style="position:relative">
+        <div class="sf-searchbar">
+          <div class="sf-searchbar-domain" onclick="toggleDomainDropdown()">
+            <span class="sf-domain-dot" style="background:var(--sf-domain-cnc)"></span>
+            <span>All Domains</span>
+            <span style="font-size:8px;opacity:0.5">▾</span>
+          </div>
+          <input class="sf-searchbar-input" id="searchInput" type="text"
+                 placeholder="Search CNC machines, endmills, used cars..."
+                 onfocus="showAutocomplete()" onblur="setTimeout(hideAutocomplete,200)">
+          <div class="sf-searchbar-shortcut">
+            <span class="kbd">Ctrl</span><span class="kbd">K</span>
+          </div>
+          <div class="sf-searchbar-filter-btn" onclick="toggleFilters()">
+            <span>⚙ Filters</span>
+            <span class="sf-searchbar-filter-count">5</span>
+          </div>
+        </div>
+
+        <!-- Autocomplete Dropdown -->
+        <div class="sf-autocomplete" id="autocomplete">
+          <div class="sf-autocomplete-group">
+            <div class="sf-autocomplete-label">Suggested</div>
+            <div class="sf-autocomplete-item">
+              <span class="sf-autocomplete-item-domain cnc">CNC</span>
+              Haas VF-2 Vertical Mill
+            </div>
+            <div class="sf-autocomplete-item">
+              <span class="sf-autocomplete-item-domain endmill">END</span>
+              1/2" 3-Flute Carbide TiAlN
+            </div>
+            <div class="sf-autocomplete-item">
+              <span class="sf-autocomplete-item-domain car">CAR</span>
+              2020 Toyota Tacoma SR5
+            </div>
+          </div>
+          <div class="sf-autocomplete-group">
+            <div class="sf-autocomplete-label">Recent</div>
+            <div class="sf-autocomplete-item">
+              <span style="font-size:11px;opacity:0.4">⏱</span>
+              Haas VF-2 · 2h ago
+            </div>
+            <div class="sf-autocomplete-item">
+              <span style="font-size:11px;opacity:0.4">⏱</span>
+              Under $50k CNC · saved
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Domain Tabs -->
+      <div class="sf-domain-tabs">
+        <div class="sf-domain-tab active" data-domain="all" onclick="switchDomain(this)">
+          <span class="sf-domain-tab-icon">🌐</span>
+          All
+          <span class="sf-domain-tab-count">12,847</span>
+        </div>
+        <div class="sf-domain-tab" data-domain="cnc" onclick="switchDomain(this)">
+          <span class="sf-domain-tab-icon">🔧</span>
+          CNC Machines
+          <span class="sf-domain-tab-count">2,341</span>
+        </div>
+        <div class="sf-domain-tab" data-domain="endmill" onclick="switchDomain(this)">
+          <span class="sf-domain-tab-icon">⚙</span>
+          Endmills
+          <span class="sf-domain-tab-count">8,124</span>
+        </div>
+        <div class="sf-domain-tab" data-domain="car" onclick="switchDomain(this)">
+          <span class="sf-domain-tab-icon">🚗</span>
+          Used Cars
+          <span class="sf-domain-tab-count">2,382</span>
+        </div>
+      </div>
+
+      <!-- Main Body: Filter + Results -->
+      <div class="sf-content-body">
+
+        <!-- Filter Panel -->
+        <div class="sf-filter-panel" id="filterPanel" style="width:280px;flex-shrink:0">
+          <div class="sf-filter-header">
+            <span class="sf-filter-title">Filters</span>
+            <button class="btn btn-sm btn-surface" onclick="resetFilters()">Reset All</button>
+          </div>
+
+          <!-- Price Range -->
+          <div class="sf-filter-group">
+            <div class="sf-filter-group-title">
+              Price Range
+              <span class="sf-filter-group-reset">reset</span>
+            </div>
+            <div class="sf-price-range">
+              <input class="input input-sm" type="text" value="$0" style="width:72px;text-align:right">
+              <span class="sf-price-range-sep">—</span>
+              <input class="input input-sm" type="text" value="$100,000" style="width:88px">
+            </div>
+            <div style="margin-top:8px">
+              <div class="sf-range-dual">
+                <div class="sf-range-track"></div>
+                <div class="sf-range-fill" style="left:15%;right:40%"></div>
+                <div class="sf-range-thumb" style="left:15%"></div>
+                <div class="sf-range-thumb" style="left:60%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="sf-filter-group">
+            <div class="sf-filter-group-title">
+              Location
+              <span class="sf-filter-group-reset">reset</span>
+            </div>
+            <input class="input input-sm" type="text" placeholder="City, state, or zip" value="Dallas, TX">
+            <div style="margin-top:6px">
+              <div class="sf-chip-group">
+                <span class="sf-chip">50 mi</span>
+                <span class="sf-chip active">100 mi</span>
+                <span class="sf-chip">250 mi</span>
+                <span class="sf-chip">500 mi</span>
+                <span class="sf-chip">Any</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Condition -->
+          <div class="sf-filter-group">
+            <div class="sf-filter-group-title">Condition</div>
+            <div class="sf-chip-group">
+              <span class="sf-chip active">New</span>
+              <span class="sf-chip active">Used — Good</span>
+              <span class="sf-chip">Used — Fair</span>
+              <span class="sf-chip">Refurbished</span>
+              <span class="sf-chip">For Parts</span>
+            </div>
+          </div>
+
+          <!-- Seller Rating -->
+          <div class="sf-filter-group">
+            <div class="sf-filter-group-title">Seller Rating</div>
+            <div class="sf-chip-group">
+              <span class="sf-chip active">⭐ 4.5+</span>
+              <span class="sf-chip">⭐ 4.0+</span>
+              <span class="sf-chip">⭐ 3.0+</span>
+              <span class="sf-chip">Any</span>
+            </div>
+          </div>
+
+          <!-- Listed Date -->
+          <div class="sf-filter-group">
+            <div class="sf-filter-group-title">Listed</div>
+            <div class="sf-chip-group">
+              <span class="sf-chip active">24h</span>
+              <span class="sf-chip">7 days</span>
+              <span class="sf-chip">30 days</span>
+              <span class="sf-chip">Any</span>
+            </div>
+          </div>
+
+          <!-- CNC-Specific Filters -->
+          <div class="sf-filter-group" id="filter-cnc">
+            <div class="sf-filter-group-title" style="color:var(--sf-domain-cnc)">
+              🔧 CNC Machine
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Machine Type</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip active">VMC</span>
+                <span class="sf-chip">HMC</span>
+                <span class="sf-chip">Lathe</span>
+                <span class="sf-chip">Router</span>
+                <span class="sf-chip">5-Axis</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Manufacturer</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip active">Haas <span class="sf-chip-x">✕</span></span>
+                <span class="sf-chip active">DMG Mori <span class="sf-chip-x">✕</span></span>
+                <span class="sf-chip">Mazak</span>
+                <span class="sf-chip">Okuma</span>
+                <span class="sf-chip">Doosan</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Year Range</div>
+              <div class="sf-price-range">
+                <input class="input input-sm" type="text" value="2015" style="width:56px;text-align:center">
+                <span class="sf-price-range-sep">—</span>
+                <input class="input input-sm" type="text" value="2024" style="width:56px;text-align:center">
+              </div>
+            </div>
+            <div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Hour Meter</div>
+              <div class="sf-price-range">
+                <input class="input input-sm" type="text" value="0" style="width:56px;text-align:center">
+                <span class="sf-price-range-sep">—</span>
+                <input class="input input-sm" type="text" value="10,000" style="width:72px">
+              </div>
+            </div>
+          </div>
+
+          <!-- Endmill-Specific Filters -->
+          <div class="sf-filter-group" id="filter-endmill" style="display:none">
+            <div class="sf-filter-group-title" style="color:var(--sf-domain-endmill)">
+              ⚙ Endmill
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Diameter</div>
+              <div class="sf-diameter-selector">
+                <span class="sf-diameter-chip">1/8"</span>
+                <span class="sf-diameter-chip">1/4"</span>
+                <span class="sf-diameter-chip">3/8"</span>
+                <span class="sf-diameter-chip active">1/2"</span>
+                <span class="sf-diameter-chip">3/4"</span>
+                <span class="sf-diameter-chip">1"</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Flute Count</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip">2</span>
+                <span class="sf-chip active">3</span>
+                <span class="sf-chip">4</span>
+                <span class="sf-chip">5</span>
+                <span class="sf-chip">6+</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Coating</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip active">TiAlN <span class="sf-chip-x">✕</span></span>
+                <span class="sf-chip">TiN</span>
+                <span class="sf-chip">AlCrN</span>
+                <span class="sf-chip">DLC</span>
+                <span class="sf-chip">Uncoated</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Material</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip active">Carbide</span>
+                <span class="sf-chip">HSS</span>
+                <span class="sf-chip">Cobalt</span>
+                <span class="sf-chip">Diamond</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Car-Specific Filters -->
+          <div class="sf-filter-group" id="filter-car" style="display:none">
+            <div class="sf-filter-group-title" style="color:var(--sf-domain-car)">
+              🚗 Used Car
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Make / Model</div>
+              <select class="select" style="height:var(--h-sm);font-size:var(--text-sm)">
+                <option>Toyota</option>
+                <option>Ford</option>
+                <option>Chevrolet</option>
+                <option>Honda</option>
+              </select>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">VIN Decoder</div>
+              <div class="sf-vin-input">
+                <input class="input input-sm" type="text" placeholder="Enter 17-digit VIN"
+                       style="font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em;flex:1"
+                       maxlength="17">
+                <button class="btn btn-sm btn-primary">Decode</button>
+              </div>
+              <div class="sf-vin-result" style="margin-top:6px">
+                <div class="sf-vin-result-row">
+                  <span class="sf-vin-result-label">Year</span>
+                  <span class="sf-vin-result-value">2020</span>
+                </div>
+                <div class="sf-vin-result-row">
+                  <span class="sf-vin-result-label">Make</span>
+                  <span class="sf-vin-result-value">Toyota</span>
+                </div>
+                <div class="sf-vin-result-row">
+                  <span class="sf-vin-result-label">Model</span>
+                  <span class="sf-vin-result-value">Tacoma</span>
+                </div>
+                <div class="sf-vin-result-row">
+                  <span class="sf-vin-result-label">Engine</span>
+                  <span class="sf-vin-result-value">3.5L V6</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div class="sf-filter-group-title">
+                Mileage
+                <span style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--ink-primary)">&lt; 50,000 mi</span>
+              </div>
+              <div class="sf-mileage-slider">
+                <input class="slider" type="range" min="0" max="200000" value="50000" step="5000">
+                <div class="sf-mileage-labels">
+                  <span>0</span>
+                  <span>50k</span>
+                  <span>100k</span>
+                  <span>150k</span>
+                  <span>200k</span>
+                </div>
+              </div>
+              <div class="sf-mileage-presets" style="margin-top:4px">
+                <span class="sf-chip">&lt;30k</span>
+                <span class="sf-chip active">&lt;50k</span>
+                <span class="sf-chip">&lt;100k</span>
+                <span class="sf-chip">Any</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">Body Type</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip">Sedan</span>
+                <span class="sf-chip active">SUV</span>
+                <span class="sf-chip active">Truck</span>
+                <span class="sf-chip">Coupe</span>
+                <span class="sf-chip">Van</span>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:4px">History</div>
+              <div class="sf-chip-group">
+                <span class="sf-chip active">Clean Title</span>
+                <span class="sf-chip">No Accidents</span>
+                <span class="sf-chip">1 Owner</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="sf-results-area">
+          <div class="sf-results-header">
+            <div class="sf-results-count">
+              <strong>12,847</strong> results · showing <strong>1–20</strong> · sorted by relevance
+            </div>
+            <div class="sf-results-toolbar">
+              <div class="sf-view-toggle">
+                <button class="sf-view-toggle-btn active" title="List view">☰</button>
+                <button class="sf-view-toggle-btn" title="Grid view">⊞</button>
+                <button class="sf-view-toggle-btn" title="Map view">🗺</button>
+              </div>
+              <select class="select" style="height:var(--h-sm);font-size:var(--text-sm);width:140px">
+                <option>Sort: Relevance</option>
+                <option>Price: Low → High</option>
+                <option>Price: High → Low</option>
+                <option>Newest First</option>
+                <option>Distance: Nearest</option>
+                <option>Rating: Highest</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Result Cards -->
+          <div class="sf-results-list">
+
+            <!-- CNC Card -->
+            <div class="sf-result-card" oncontextmenu="showContextMenu(event)" onclick="openDetail('cnc')">
+              <div class="sf-result-card-check" onclick="event.stopPropagation();this.classList.toggle('checked')"></div>
+              <div class="sf-result-card-photo" style="background:linear-gradient(135deg,var(--canvas-elevated),var(--canvas-bright))">
+                <span style="font-size:32px">🔧</span>
+              </div>
+              <div class="sf-result-card-body">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span class="sf-result-card-title">Haas VF-2SS Super Speed Vertical Mill</span>
+                  <span class="sf-deal-badge great">🟢 Great Deal</span>
+                </div>
+                <div class="sf-result-card-subtitle">2019 · 1,247 hours · Fanuc 31i-B5 · 20T ATC</div>
+                <div class="sf-result-card-price">
+                  $52,500
+                  <span style="font-size:11px;color:var(--code-success);font-family:var(--font-ui);font-weight:500">↓ 4.5% below avg</span>
+                </div>
+                <div class="sf-result-card-meta">
+                  📍 Dallas, TX · 342 mi · ⭐ 4.8 (23 sales) · ✓ Verified Dealer
+                </div>
+                <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-top:2px">
+                  Travel: 30"×16"×20" · Spindle: 12,000 RPM · Power: 20 HP
+                </div>
+                <div class="sf-result-card-actions">
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">♥ Save</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">⚖ Compare</button>
+                  <button class="btn btn-sm btn-primary" onclick="event.stopPropagation()">🔗 View Listing</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">📞 Contact</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Endmill Card -->
+            <div class="sf-result-card" oncontextmenu="showContextMenu(event)" onclick="openDetail('endmill')">
+              <div class="sf-result-card-check" onclick="event.stopPropagation();this.classList.toggle('checked')"></div>
+              <div class="sf-result-card-photo" style="background:linear-gradient(135deg,rgba(92,225,230,0.08),var(--canvas-elevated))">
+                <span style="font-size:32px">⚙</span>
+              </div>
+              <div class="sf-result-card-body">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span class="sf-result-card-title">Harvey Tool 1/2" 3-Flute TiAlN Carbide Endmill</span>
+                  <span class="sf-deal-badge fair">🟡 Fair Price</span>
+                </div>
+                <div class="sf-result-card-subtitle">0.500" DIA · 1.5" LOC · 3.0" OAL · Square End</div>
+                <div class="sf-result-card-price">
+                  $24.95
+                  <span style="font-size:11px;color:var(--ink-muted);font-family:var(--font-ui)">box of 10: $198 (↓21% per-unit)</span>
+                </div>
+                <div class="sf-result-card-meta">
+                  📍 Supplier: Maritool · In Stock ✓ · ⭐ 4.9 (142 reviews) · Free Ship $50+
+                </div>
+                <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-top:2px">
+                  Coating: TiAlN · HRC: 45-55 · Ideal: Steel, Stainless
+                </div>
+                <div class="sf-result-card-actions">
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">♥ Save</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">⚖ Compare</button>
+                  <button class="btn btn-sm btn-success" onclick="event.stopPropagation()">🛒 Add to Cart</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Car Card -->
+            <div class="sf-result-card" oncontextmenu="showContextMenu(event)" onclick="openDetail('car')">
+              <div class="sf-result-card-check" onclick="event.stopPropagation();this.classList.toggle('checked')"></div>
+              <div class="sf-result-card-photo" style="background:linear-gradient(135deg,rgba(108,138,255,0.08),var(--canvas-elevated))">
+                <span style="font-size:32px">🚗</span>
+              </div>
+              <div class="sf-result-card-body">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span class="sf-result-card-title">2020 Toyota Tacoma TRD Off-Road</span>
+                  <span class="sf-deal-badge great">🟢 Great Deal</span>
+                </div>
+                <div class="sf-result-card-subtitle">V6 · 4WD · Automatic · 34,200 mi</div>
+                <div class="sf-result-card-price">
+                  $34,900
+                  <span style="font-size:11px;color:var(--code-success);font-family:var(--font-ui);font-weight:500">↓ 8.2% below avg</span>
+                </div>
+                <div class="sf-result-card-meta">
+                  📍 Phoenix, AZ · 128 mi · ⭐ 4.7 (89 sales) · ✓ Carfax Verified
+                </div>
+                <div class="sf-history-badges" style="margin-top:4px">
+                  <span class="sf-history-badge clean">✓ Clean Title</span>
+                  <span class="sf-history-badge accident-free">✓ No Accidents</span>
+                  <span class="sf-history-badge owner">1 Owner</span>
+                </div>
+                <div class="sf-result-card-actions">
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">♥ Save</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">⚖ Compare</button>
+                  <button class="btn btn-sm btn-primary" onclick="event.stopPropagation()">🔗 View Listing</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">📞 Dealer</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- More CNC -->
+            <div class="sf-result-card" oncontextmenu="showContextMenu(event)">
+              <div class="sf-result-card-check" onclick="event.stopPropagation();this.classList.toggle('checked')"></div>
+              <div class="sf-result-card-photo" style="background:linear-gradient(135deg,var(--canvas-elevated),var(--canvas-bright))">
+                <span style="font-size:32px">🔧</span>
+              </div>
+              <div class="sf-result-card-body">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span class="sf-result-card-title">DMG Mori CMX 600 V VMC</span>
+                  <span class="sf-deal-badge above">🔴 Above Market</span>
+                </div>
+                <div class="sf-result-card-subtitle">2020 · 890 hours · Siemens 840D sl · 30T ATC</div>
+                <div class="sf-result-card-price">
+                  $67,000
+                  <span style="font-size:11px;color:var(--code-danger);font-family:var(--font-ui);font-weight:500">↑ 21.8% above avg</span>
+                </div>
+                <div class="sf-result-card-meta">
+                  📍 Chicago, IL · 891 mi · ⭐ 4.6 (17 sales) · ✓ Verified Dealer
+                </div>
+                <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-top:2px">
+                  Travel: 31"×20"×20" · Spindle: 15,000 RPM · Power: 25 HP
+                </div>
+                <div class="sf-result-card-actions">
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">♥ Save</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">⚖ Compare</button>
+                  <button class="btn btn-sm btn-primary" onclick="event.stopPropagation()">🔗 View Listing</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Drop Card -->
+            <div class="sf-result-card" oncontextmenu="showContextMenu(event)">
+              <div class="sf-result-card-check" onclick="event.stopPropagation();this.classList.toggle('checked')"></div>
+              <div class="sf-result-card-photo" style="background:linear-gradient(135deg,rgba(124,224,255,0.08),var(--canvas-elevated))">
+                <span style="font-size:32px">🚗</span>
+              </div>
+              <div class="sf-result-card-body">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span class="sf-result-card-title">2019 Ford F-150 XLT SuperCrew</span>
+                  <span class="sf-deal-badge drop">↓ Price Drop</span>
+                  <span class="sf-deal-badge fair">🟡 Fair Price</span>
+                </div>
+                <div class="sf-result-card-subtitle">5.0L V8 · 4WD · Automatic · 41,500 mi</div>
+                <div class="sf-result-card-price">
+                  $28,900
+                  <span style="font-size:11px;color:var(--code-info);font-family:var(--font-ui);font-weight:500">↓ $2,100 from $31,000</span>
+                </div>
+                <div class="sf-result-card-meta">
+                  📍 San Antonio, TX · 275 mi · ⭐ 4.5 (56 sales)
+                </div>
+                <div class="sf-history-badges" style="margin-top:4px">
+                  <span class="sf-history-badge clean">✓ Clean Title</span>
+                  <span class="sf-history-badge accident-free">✓ No Accidents</span>
+                  <span class="sf-history-badge owner">2 Owners</span>
+                </div>
+                <div class="sf-result-card-actions">
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">♥ Save</button>
+                  <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation()">⚖ Compare</button>
+                  <button class="btn btn-sm btn-primary" onclick="event.stopPropagation()">🔗 View Listing</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Load More -->
+          <div style="text-align:center;padding:var(--sp-4)">
+            <button class="btn btn-md btn-ghost">Load More Results</button>
+          </div>
+        </div>
+
+        <!-- Detail Drawer -->
+        <div class="sf-detail-drawer" id="detailDrawer">
+          <div class="sf-detail-drawer-inner">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)">
+              <h3 style="font-size:var(--text-md);font-weight:var(--w-semibold);color:var(--ink-primary)">
+                Item Details
+              </h3>
+              <button class="btn btn-sm btn-surface" onclick="closeDetail()">✕</button>
+            </div>
+
+            <!-- Photo Grid -->
+            <div class="sf-photo-grid">
+              <div class="sf-photo-grid-item" style="background:linear-gradient(135deg,var(--canvas-elevated),var(--canvas-bright))">📷</div>
+              <div class="sf-photo-grid-item">📷</div>
+              <div class="sf-photo-grid-item">📷</div>
+              <div class="sf-photo-grid-item">📷</div>
+            </div>
+
+            <!-- Detail Title -->
+            <h2 style="font-size:var(--text-lg);font-weight:var(--w-bold);color:var(--ink-primary);margin-bottom:4px">
+              Haas VF-2SS Super Speed
+            </h2>
+            <div style="font-size:var(--text-sm);color:var(--ink-muted);margin-bottom:var(--sp-3)">
+              2019 · 1,247 hours · Fanuc 31i-B5
+            </div>
+
+            <!-- Price + Deal -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-3)">
+              <span style="font-size:var(--sf-price-lg);font-weight:var(--w-bold);color:var(--ink-primary);font-family:var(--font-mono)">$52,500</span>
+              <span class="sf-deal-badge great" style="font-size:11px">🟢 Great Deal</span>
+            </div>
+            <div style="font-size:var(--text-sm);color:var(--ink-muted);margin-bottom:var(--sp-3)">
+              📍 Dallas, TX · 342 mi away · ⭐ 4.8 (23 sales) · ✓ Verified
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:var(--sp-2);margin-bottom:var(--sp-4)">
+              <button class="btn btn-md btn-primary" style="flex:1">🔗 View Listing</button>
+              <button class="btn btn-md btn-ghost">📞</button>
+              <button class="btn btn-md btn-ghost">♥</button>
+            </div>
+
+            <!-- Spec Table -->
+            <h4 style="font-size:var(--text-sm);font-weight:var(--w-semibold);color:var(--ink-secondary);margin-bottom:var(--sp-2)">Specifications</h4>
+            <table class="sf-spec-table">
+              <tr><td>Machine Type</td><td>Vertical Machining Center</td></tr>
+              <tr><td>Travel X</td><td>30"</td></tr>
+              <tr><td>Travel Y</td><td>16"</td></tr>
+              <tr><td>Travel Z</td><td>20"</td></tr>
+              <tr><td>Spindle Speed</td><td>12,000 RPM</td></tr>
+              <tr><td>Spindle Power</td><td>20 HP</td></tr>
+              <tr><td>ATC Capacity</td><td>20+1</td></tr>
+              <tr><td>Control</td><td>Fanuc 31i-B5</td></tr>
+              <tr><td>Table Size</td><td>36" × 14"</td></tr>
+              <tr><td>Weight</td><td>7,200 lbs</td></tr>
+              <tr><td>Condition</td><td>Excellent</td></tr>
+            </table>
+
+            <!-- Price History -->
+            <div class="sf-chart" style="margin-top:var(--sp-4)">
+              <div class="sf-chart-header">
+                <span class="sf-chart-title">📈 Price History (90 days)</span>
+              </div>
+              <div class="sf-chart-canvas" style="height:120px;position:relative">
+                <svg width="100%" height="100%" viewBox="0 0 400 120" preserveAspectRatio="none">
+                  <!-- Grid lines -->
+                  <line x1="0" y1="30" x2="400" y2="30" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                  <line x1="0" y1="60" x2="400" y2="60" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                  <line x1="0" y1="90" x2="400" y2="90" stroke="var(--sf-chart-grid)" stroke-width="0.5"/>
+                  <!-- Market average line -->
+                  <line x1="0" y1="55" x2="400" y2="55" stroke="var(--sf-chart-avg)" stroke-width="1" stroke-dasharray="4,4"/>
+                  <!-- Price line -->
+                  <polyline points="0,80 40,75 80,70 120,65 160,60 200,55 240,58 280,50 320,48 360,52 400,45"
+                            fill="none" stroke="var(--sf-chart-line)" stroke-width="2"/>
+                  <!-- Fill -->
+                  <polyline points="0,80 40,75 80,70 120,65 160,60 200,55 240,58 280,50 320,48 360,52 400,45 400,120 0,120"
+                            fill="var(--sf-chart-fill)" opacity="0.5"/>
+                  <!-- Current price dot -->
+                  <circle cx="400" cy="45" r="4" fill="var(--sf-chart-line)"/>
+                </svg>
+                <div style="position:absolute;right:8px;top:8px;font-size:10px;color:var(--ink-muted);font-family:var(--font-mono)">$52,500</div>
+                <div style="position:absolute;right:8px;top:50px;font-size:10px;color:var(--ink-ghost);font-family:var(--font-mono)">avg $55,200</div>
+              </div>
+            </div>
+
+            <!-- Dealer Info -->
+            <div style="margin-top:var(--sp-4);padding:var(--sp-3);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-md)">
+              <div style="font-size:var(--text-sm);font-weight:var(--w-semibold);color:var(--ink-primary);margin-bottom:4px">Dallas CNC Sales</div>
+              <div style="font-size:var(--text-xs);color:var(--ink-muted)">⭐ 4.8 · 23 sales · Verified Dealer · Responds within 2h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FLOATING COMPARISON TRAY ═══════════ -->
+  <div class="sf-comparison-tray-wrap hidden" id="comparisonTray">
+    <div class="sf-comparison-tray">
+      <span class="sf-comparison-tray-label">⚖ Compare (2/4)</span>
+      <div class="sf-comparison-tray-items">
+        <div class="sf-comparison-slot occupied">
+          <div class="sf-comparison-slot-name">Haas VF-2SS</div>
+          <div class="sf-comparison-slot-price">$52,500</div>
+        </div>
+        <div class="sf-comparison-slot occupied">
+          <div class="sf-comparison-slot-name">DMG Mori CMX</div>
+          <div class="sf-comparison-slot-price">$67,000</div>
+        </div>
+        <div class="sf-comparison-slot">+ Add item</div>
+        <div class="sf-comparison-slot">+ Add item</div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="toggleComparisonTray()">Open Table</button>
+      <button class="btn btn-sm btn-surface" onclick="toggleComparisonTray()">✕</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ STATUS BAR ═══════════ -->
+  <div class="sf-statusbar">
+    <div class="sf-statusbar-item">
+      <strong>12,847</strong>&nbsp;results
+    </div>
+    <div class="sf-statusbar-sep"></div>
+    <div class="sf-statusbar-item">23 new today</div>
+    <div class="sf-statusbar-sep"></div>
+    <div class="sf-statusbar-item">Last sync: 2m ago</div>
+    <div class="sf-statusbar-sep"></div>
+    <div class="sf-statusbar-item">
+      <span class="status-dot on"></span> Live
+    </div>
+    <div style="flex:1"></div>
+    <div class="sf-statusbar-item">
+      <span class="kbd" style="font-size:8px;height:14px">Ctrl+K</span> Command Palette
+    </div>
+    <div class="sf-statusbar-sep"></div>
+    <div class="sf-statusbar-item">
+      <span class="kbd" style="font-size:8px;height:14px">?</span> Shortcuts
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CONTEXT MENU ═══════════ -->
+<div class="sf-context-menu" id="contextMenu">
+  <div class="sf-context-menu-item">♥ Save to Watchlist <span class="kbd">H</span></div>
+  <div class="sf-context-menu-item">⚖ Add to Comparison <span class="kbd">Space</span></div>
+  <div class="sf-context-menu-item">🔔 Set Price Alert</div>
+  <div class="sf-context-menu-sep"></div>
+  <div class="sf-context-menu-item">🔗 Open in New Tab <span class="kbd">Enter</span></div>
+  <div class="sf-context-menu-item">📤 Share Link</div>
+  <div class="sf-context-menu-item">📋 Copy Specs</div>
+  <div class="sf-context-menu-sep"></div>
+  <div class="sf-context-menu-item danger">⚠ Report Listing</div>
+</div>
+
+<!-- ═══════════ COMMAND PALETTE ═══════════ -->
+<div class="sf-cmd-overlay" id="cmdPalette" onclick="if(event.target===this)closeCmdPalette()">
+  <div class="sf-cmd-palette">
+    <div class="sf-cmd-input-row">
+      <span style="color:var(--ink-muted);font-size:14px">🔍</span>
+      <input class="sf-cmd-input" type="text" placeholder="Type a command or search..." autofocus>
+      <span class="kbd" style="font-size:9px">Esc</span>
+    </div>
+    <div class="sf-cmd-results">
+      <div class="sf-cmd-group-label">Recent Searches</div>
+      <div class="sf-cmd-item selected">
+        <span class="sf-cmd-item-icon">🔧</span>
+        Haas VF-2
+      </div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">⚙</span>
+        1/2" TiAlN endmill
+      </div>
+      <div class="sf-cmd-group-label">Saved Searches</div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">📁</span>
+        Under $50k CNC
+      </div>
+      <div class="sf-cmd-group-label">Commands</div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">🔧</span>
+        Switch to CNC domain
+        <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+1</span></span>
+      </div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">📁</span>
+        Open saved searches
+        <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+S</span></span>
+      </div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">📤</span>
+        Export current results
+        <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+E</span></span>
+      </div>
+      <div class="sf-cmd-item">
+        <span class="sf-cmd-item-icon">🔔</span>
+        Create new alert
+        <span class="sf-cmd-item-shortcut"><span class="kbd">Ctrl+Shift+A</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ KEYBOARD SHORTCUTS ═══════════ -->
+<div class="sf-shortcuts-overlay" id="shortcutsOverlay" onclick="if(event.target===this)toggleShortcuts()">
+  <div class="sf-shortcuts-panel">
+    <div class="sf-shortcuts-title">⌨ Keyboard Shortcuts</div>
+    <div class="sf-shortcuts-grid">
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Command palette</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">K</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Switch to CNC</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">1</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Switch to Endmills</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">2</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Switch to Cars</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">3</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Focus filters</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">F</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Toggle comparison</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">C</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Save search</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">S</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Export results</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">E</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">New alert</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">A</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Focus search</span>
+        <div class="sf-shortcut-keys"><span class="kbd">/</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Navigate results</span>
+        <div class="sf-shortcut-keys"><span class="kbd">J</span><span class="kbd">K</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Toggle compare</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Space</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Save/heart item</span>
+        <div class="sf-shortcut-keys"><span class="kbd">H</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Toggle map view</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">M</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Toggle list/grid</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Ctrl</span><span class="kbd">L</span></div>
+      </div>
+      <div class="sf-shortcut-row">
+        <span class="sf-shortcut-action">Close / clear</span>
+        <div class="sf-shortcut-keys"><span class="kbd">Esc</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:var(--sp-3)">
+      <button class="btn btn-sm btn-ghost" onclick="toggleShortcuts()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+  // ── Domain Switching ──────────────────────────────────────────
+  function switchDomain(tab) {
+    document.querySelectorAll('.sf-domain-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const domain = tab.dataset.domain;
+
+    // Show/hide domain-specific filters
+    document.getElementById('filter-cnc').style.display =
+      (domain === 'all' || domain === 'cnc') ? '' : 'none';
+    document.getElementById('filter-endmill').style.display =
+      (domain === 'all' || domain === 'endmill') ? '' : 'none';
+    document.getElementById('filter-car').style.display =
+      (domain === 'all' || domain === 'car') ? '' : 'none';
+  }
+
+  // ── Filter Panel Toggle ──────────────────────────────────────
+  let filtersOpen = true;
+  function toggleFilters() {
+    const panel = document.getElementById('filterPanel');
+    filtersOpen = !filtersOpen;
+    panel.style.width = filtersOpen ? '280px' : '0';
+    panel.style.overflow = filtersOpen ? '' : 'hidden';
+    panel.style.borderRight = filtersOpen ? '' : 'none';
+    panel.style.padding = filtersOpen ? '' : '0';
+  }
+
+  function resetFilters() {
+    document.querySelectorAll('.sf-filter-panel .sf-chip.active').forEach(c => c.classList.remove('active'));
+  }
+
+  // ── Autocomplete ──────────────────────────────────────────────
+  function showAutocomplete() {
+    document.getElementById('autocomplete').classList.add('open');
+  }
+  function hideAutocomplete() {
+    document.getElementById('autocomplete').classList.remove('open');
+  }
+
+  // ── Context Menu ──────────────────────────────────────────────
+  function showContextMenu(e) {
+    e.preventDefault();
+    const menu = document.getElementById('contextMenu');
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+    menu.classList.add('open');
+  }
+  document.addEventListener('click', () => {
+    document.getElementById('contextMenu').classList.remove('open');
+  });
+
+  // ── Command Palette ───────────────────────────────────────────
+  function openCmdPalette() {
+    document.getElementById('cmdPalette').classList.add('open');
+    document.querySelector('.sf-cmd-input').focus();
+  }
+  function closeCmdPalette() {
+    document.getElementById('cmdPalette').classList.remove('open');
+  }
+
+  // ── Keyboard Shortcuts ────────────────────────────────────────
+  function toggleShortcuts() {
+    document.getElementById('shortcutsOverlay').classList.toggle('open');
+  }
+
+  // ── Comparison Tray ──────────────────────────────────────────
+  function toggleComparisonTray() {
+    document.getElementById('comparisonTray').classList.toggle('hidden');
+  }
+
+  // ── Detail Drawer ────────────────────────────────────────────
+  function openDetail(type) {
+    document.getElementById('detailDrawer').classList.add('open');
+  }
+  function closeDetail() {
+    document.getElementById('detailDrawer').classList.remove('open');
+  }
+
+  // ── Global Keyboard Handler ───────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    // Don't trigger shortcuts when typing in inputs
+    const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA';
+
+    // Ctrl+K — Command palette
+    if (e.ctrlKey && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openCmdPalette();
+      return;
+    }
+
+    // Escape — Close overlays
+    if (e.key === 'Escape') {
+      closeCmdPalette();
+      document.getElementById('shortcutsOverlay').classList.remove('open');
+      document.getElementById('contextMenu').classList.remove('open');
+      closeDetail();
+      return;
+    }
+
+    // / — Focus search
+    if (!isInput && e.key === '/') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+      return;
+    }
+
+    // ? — Show shortcuts
+    if (!isInput && e.key === '?') {
+      e.preventDefault();
+      toggleShortcuts();
+      return;
+    }
+
+    // Ctrl+1/2/3 — Domain switching
+    if (e.ctrlKey && ['1','2','3'].includes(e.key)) {
+      e.preventDefault();
+      const tabs = document.querySelectorAll('.sf-domain-tab');
+      const idx = parseInt(e.key) - 1;
+      if (tabs[idx]) switchDomain(tabs[idx]);
+      return;
+    }
+
+    // Ctrl+Shift+C — Toggle comparison
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+      e.preventDefault();
+      toggleComparisonTray();
+      return;
+    }
+  });
+
+  // ── View Toggle ──────────────────────────────────────────────
+  document.querySelectorAll('.sf-view-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.parentElement.querySelectorAll('.sf-view-toggle-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ── Chip Toggle ──────────────────────────────────────────────
+  document.querySelectorAll('.sf-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+  });
+
+  // ── Diameter Chip Toggle ──────────────────────────────────────
+  document.querySelectorAll('.sf-diameter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.parentElement.querySelectorAll('.sf-diameter-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ── Sidebar Nav ──────────────────────────────────────────────
+  document.querySelectorAll('.sf-nav-item[data-nav]').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.sf-nav-item[data-nav]').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
